@@ -12,14 +12,24 @@
   \_____\____/|_| \_|  |_|  |_|  \_\\____/|______|______|______|_|  \_\ 
                                                                         
 PROJEKT PTM 2020
-Update [19.03.2020]
- - modyfikacja do minecrafta
+
+POSTĘP:
+
+[19.03.2020] Pierwszy commit 
+MODYFIKACJA:
+ - init modyfikacja do minecrafta
+ INNE:
  - zbieranie surowych danych z żyroskopu
+ 
+ [21.03.2020] Prace nad komunikacją
+ MODYFIKACJA:
+ - klasa do binarnej komunikacji PortSeryjny->Usart
+ - komenda echo <wiadomość>- udaje, że dana wiadomość została odebrana na porcie seryjnym.
+ - wysyłanie wiadomości jako łańcuchy binarne
+
 
 
                                                                         
-
-
 
 Maciej Stefaniak
 Mateusz Stelmasiak
