@@ -1,5 +1,5 @@
 README
-[1] Zainstaluj forge-1.15.2.exe.
+[1] Zainstaluj forge-1.15.2.jar.
 [2] Odpal plik runClient.bat
 [4] /serial help daje help do wszystkich dostępnych komend.
 
