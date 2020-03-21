@@ -12,10 +12,12 @@ public class Serial
 {
     public final static String MODID ="serial";
     public static SerialInterface serialInterface= new SerialInterface();
+
     
     public Serial() {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+        
     }
     
     @SubscribeEvent

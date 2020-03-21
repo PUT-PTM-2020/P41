@@ -7,6 +7,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.serial.serialmod.Serial;
 import com.serial.serialmod.SerialInterface;
+
+import interpretation.BinaryByte;
+import interpretation.SerialMessageInterpreter;
 import jssc.SerialPortException;
 
 import net.minecraft.command.CommandSource;
@@ -20,12 +23,15 @@ public class ModCommands {
 	    	allComands=
 	    			//all commands must begin with /serial <command>
 	    	dispatcher.register(Commands.literal("serial") 
-	    			//the instructions are added in seperate funcions
+	    			//the instructions are added in seperate functions
 	            .then(registerConnect()) //for example "/serial connect COM12"
 	            .then(registerPortList())//prints all ports for example "/serial ports"
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
+	            .then(registerSendB()) //sends a message as binary
+	            .then(registerEchoB()) //sends a message as binary
 	            .then(registerDisconnect()) //disconnects from the currently connected port "/serial disconnect"
 	            .then(registerIsConnected()) //shows whether any ports are connected 
+	            .then(registerEcho()) //acts as if written message was received
 	            .then(registerHelp()) //prints help
 	            .executes(ctx -> {
 	            	printHelp(ctx); 
@@ -111,18 +117,26 @@ public class ModCommands {
 			            });    
 	    }
 	    
-	    //SEND
-	    public static ArgumentBuilder<CommandSource, ?> registerSend() {
-	        return Commands.literal("send") 
+	    //REPEAT
+	    public static ArgumentBuilder<CommandSource, ?> registerEcho() {
+	        return Commands.literal("echo") 
 		            .then(Commands.argument("toBeSent", StringArgumentType.string())
 			                .executes(ctx -> { 			                	
 			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
 			                	try
 			                	{
-			                		Serial.serialInterface.sendMessage(toBeSent);
+			                		SerialInterface.repeat(toBeSent);
 			                		StringTextComponent baseText= new StringTextComponent("");
-		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent data: "));
-		                 			baseText.appendSibling(new StringTextComponent("\u00A7f"+toBeSent));
+		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Echo data: "));
+		                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
+		                 			
+		                 			baseText.appendSibling(new StringTextComponent("\n\n\u00A7f"+"Char  Binary     ASCII "));
+		                 			byte[]  by = toBeSent.getBytes();
+									for(int j=0;j<by.length;j++) {
+										baseText.appendSibling(new StringTextComponent("\n \u00A73"+toBeSent.charAt(j)));
+										baseText.appendSibling(new StringTextComponent("     \u00A7f"+BinaryByte.getBinary(by[j])));
+										baseText.appendSibling(new StringTextComponent("   \u00A7e("+by[j]+")"));
+									}
 		                 			ctx.getSource().sendFeedback(baseText,false);
 			                	}
 			                	catch (SerialPortException e) 
@@ -139,6 +153,116 @@ public class ModCommands {
 		            });
 	    	
 		}  	    
+	    
+       	
+	    
+	    //SENDB
+	    public static ArgumentBuilder<CommandSource, ?> registerSendB() {
+	        return Commands.literal("sendB")
+		            	.then(Commands.argument("toBeSent", StringArgumentType.string())
+			                .executes(ctx -> { 			                	
+			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+			                	try
+			                	{
+			                		BinaryByte b[] = BinaryByte.getBinaryByteArray(toBeSent, "N");
+			                		Serial.serialInterface.sendMessage(BinaryByte.getByteArray(b));
+			                		
+			                		
+			                		StringTextComponent baseText= new StringTextComponent("");
+		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent data: "));
+		                 		
+									for(int j=0;j<b.length;j++) {
+										baseText.appendSibling(new StringTextComponent("\n \u00A7f["+Integer.toString(j)+"] "));
+										baseText.appendSibling(new StringTextComponent(" \u00A73"+b[j]));
+									}
+		                 			ctx.getSource().sendFeedback(baseText,false);
+			                	}
+			                	catch (SerialPortException e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.getExceptionType()),false);
+			                	}
+			                	return 1;
+			                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		} 
+	    
+	    public static ArgumentBuilder<CommandSource, ?> registerEchoB() {
+	        return Commands.literal("echoB")
+		            	.then(Commands.argument("toBeSent", StringArgumentType.string())
+			                .executes(ctx -> { 			                	
+			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+			                	try
+			                	{
+			                		BinaryByte b[] = BinaryByte.getBinaryByteArray(toBeSent, "N");
+			                		SerialInterface.repeat(BinaryByte.getByteArray(b));
+			                		
+			                		StringTextComponent baseText= new StringTextComponent("");
+		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Echoing: "));
+		                 		
+									for(int j=0;j<b.length;j++) {
+										baseText.appendSibling(new StringTextComponent("\n \u00A7f["+Integer.toString(j)+"]"));
+										baseText.appendSibling(new StringTextComponent(" \u00A73"+b[j]));
+									}
+		                 			ctx.getSource().sendFeedback(baseText,false);
+			                	}
+			                	catch (SerialPortException e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.getExceptionType()),false);
+			                	}
+			                	return 1;
+			                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		} 
+	       	
+	    
+	    //SEND
+	    public static ArgumentBuilder<CommandSource, ?> registerSend() {
+	        return Commands.literal("send")
+		            	.then(Commands.argument("toBeSent", StringArgumentType.string())
+			                .executes(ctx -> { 			                	
+			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+			                	try
+			                	{
+			                		Serial.serialInterface.sendMessage(toBeSent);
+			                		StringTextComponent baseText= new StringTextComponent("");
+		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent data: "));
+		                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
+		                 			
+		                 			baseText.appendSibling(new StringTextComponent("\n\n\u00A7f"+"Char  Binary     ASCII "));
+		                 			byte[]  by = toBeSent.getBytes();
+									for(int j=0;j<by.length;j++) {
+										baseText.appendSibling(new StringTextComponent("\n \u00A73"+toBeSent.charAt(j)));
+										baseText.appendSibling(new StringTextComponent("     \u00A7f"+BinaryByte.getBinary(by[j])));
+										baseText.appendSibling(new StringTextComponent("   \u00A7e("+by[j]+")"));
+									}
+		                 			ctx.getSource().sendFeedback(baseText,false);
+			                	}
+			                	catch (SerialPortException e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.getExceptionType()),false);
+			                	}
+			                	return 1;
+			                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		} 
+	    
+	  	
+	    
 	    
 	    //IS CONNECTED
 	    public static ArgumentBuilder<CommandSource, ?> registerIsConnected() {

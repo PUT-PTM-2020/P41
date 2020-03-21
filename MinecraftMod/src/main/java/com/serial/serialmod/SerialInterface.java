@@ -2,6 +2,8 @@ package com.serial.serialmod;
 
 
 
+import interpretation.BinaryByte;
+import interpretation.SerialMessageInterpreter;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -31,7 +33,7 @@ public class SerialInterface implements SerialPortEventListener
     }
 
     public void sendMessage(byte[] bytes) throws SerialPortException {
-		serialPort.writeBytes(bytes);
+		//serialPort.writeBytes(bytes);
 	}
 	
 	public void sendMessage(String str) throws SerialPortException {
@@ -42,13 +44,21 @@ public class SerialInterface implements SerialPortEventListener
 			serialPort.closePort();
 			serialPort=null;
 	}
+	
+	public static void repeat(String value) throws SerialPortException {
+		SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(value.getBytes()));
+	}
+	
+	public static void repeat(byte[] bytes) throws SerialPortException {
+		SerialMessageInterpreter.interpret((BinaryByte.getBinaryByteArray(bytes)));
+	}
+	
 
 	public void serialEvent(SerialPortEvent event) {
         if(event.isRXCHAR()){
             try {
             	int value = event.getEventValue();
-                SerialMessageInterpreter.interpret(serialPort.readBytes(value));
-                
+                SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(serialPort.readBytes(value)));     
             } catch (SerialPortException ex) {
                 System.out.println(ex);
             }
