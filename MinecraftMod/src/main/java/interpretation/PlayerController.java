@@ -4,16 +4,12 @@ import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class PlayerController {
-	//CONTROL
-	// W S A D U B (W,S,A,D,Up,Below)
-	// 1 0 0 0 0 0 -goes forward
-	public int CAMERA_PITCH_INCREMENT=2;
-	public int CAMERA_YAW_INCREMENT=2;
 	
 	private GameSettings gs = null;
-	private ClientPlayerEntity player= null;
+	private PlayerEntity player= null;
 	byte currentItem = 0;
 	int toolNumber = 10;
 	
@@ -24,7 +20,6 @@ public class PlayerController {
 	}
 	
 	
-
 	//PLAYER MOVEMENT
 	 //helper
 	 public void setForward(boolean b){ KeyBinding.setKeyBindState(gs.keyBindForward.getKey(), b);}  
@@ -65,21 +60,12 @@ public class PlayerController {
 	 public void rightClicking(boolean b) {KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), b);}
 	    	
 	//CAMERA  
+	public void setCamera(float around,float upDown) {setCameraAround(around);setCameraUpDown(upDown);}
+	public void setCameraAround(float yaw) { this.player.rotationYaw=yaw;} //0-360 degrees
+	public void setCameraUpDown(float pitch) {this.player.rotationPitch=pitch;} //-90 to 90
 
 	 
 	//TOOLS
-	 public void useInterface(String interfaceClues) {
-		 if(interfaceClues.length()!=6) {return;}
-		 /*
-		 if(interfaceClues.charAt(0)=='1') {player.rotationPitch=player.rotationPitch+CAMERA_PITCH_INCREMENT;}
-		 if(interfaceClues.charAt(1)=='1') {player.rotationPitch=player.rotationPitch+CAMERA_PITCH_INCREMENT;}
-		 if(interfaceClues.charAt(2)=='1') {player.rotationPitch=player.rotationPitch-CAMERA_PITCH_INCREMENT;}
-		 if(interfaceClues.charAt(3)=='1') {player.rotationPitch=player.rotationPitch-CAMERA_PITCH_INCREMENT;}
-		 if(interfaceClues.charAt(4)=='1') {player.rotationYaw=player.rotationYaw+CAMERA_YAW_INCREMENT ;}
-		 if(interfaceClues.charAt(5)=='1') {player.rotationYaw=player.rotationYaw-CAMERA_YAW_INCREMENT ;}
-		 */
-	 }
-	 
 	 public void selectTool(int toolIndex) {
 		 currentItem= (byte) (toolIndex & 0x00);
 		 updateSelection();
@@ -106,37 +92,22 @@ public class PlayerController {
 	//EQ
 	 
 	 //CRAFTING
-	    
+	   
+	 //GETTERS/SETTERS
 	 public GameSettings getGs() {
-			return gs;
-		}
+		return gs;
+	}
 
-		public void setGs(GameSettings gs) {
-			this.gs = gs;
-		}
+	public void setGs(GameSettings gs) {
+		this.gs = gs;
+	}
 
-		public ClientPlayerEntity getPlayer() {
-			return player;
-		}
+	public PlayerEntity getPlayer() {
+		return player;
+	}
 
-		public void setPlayer(ClientPlayerEntity player) {
-			this.player = player;
-		}
+	public void setPlayer(ClientPlayerEntity player) {
+		this.player = player;
+	}
 
-		public byte getCurrentItem() {
-			return currentItem;
-		}
-
-		public void setCurrentItem(byte currentItem) {
-			this.currentItem = currentItem;
-		}
-
-		public int getToolNumber() {
-			return toolNumber;
-		}
-
-		public void setToolNumber(int toolNumber) {
-			this.toolNumber = toolNumber;
-		}
-	     
 }

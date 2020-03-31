@@ -1,4 +1,4 @@
-package interpretation;
+package binaryCommunication;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -7,23 +7,19 @@ import java.util.Arrays;
 
 public class Package {
 	
-	/* PACKAGE STRUCTURE
-	 * 
-	 * {FIELDS}------------------------------------------------------------------------------------------------
-	 * NAME  STANDS FOR     VALUES (decimal)   USE                                    CASES
-	 * P	 PackageType    2**1 (2)           For specyfing if its binary or ASCII.  0 for ASCII, 1 for Binary
-	 * T	 Order Type     2**4 (16)          For selection of activity type.        Between 0-15 ASCII messages, 16-31 binary
-	 * SUB	 Order subType  2**3 (9)           For specific instructions.
-	 * ARG   Argument		2**8 
-	 * 
-	 * 
-	 * {BYTE STRUCTURE}---------------------------------------------------------------------------------------
-	 * BYTE	  BYTE[0]        BYTE[1]     BYTE[2]     BYTE[3]     BYTE[4]     BYTE[5]     BYTE[6]     BYTE[7]	
-	 * 0      [P]            [T0] 		 [T1]        [T2] 		 [T3]        [SUB0]      [SUB1]      [SUB2]
-	 * 1+     [ARG_0_0]      ..          ..           ..         [ARG_0_4]    ...         ...         ...
-	 * ...
-	 */
-	
+	/*STRUCTURE
+     * BYTE         BYTE[0]        BYTE[1]     BYTE[2]     BYTE[3]     BYTE[4]     BYTE[5]     BYTE[6]     BYTE[7]    
+     * 0                      [P]            [T0]          [T1]        [T2]          [T3]        [SUB0]      [SUB1]      [SUB2]
+     * 1+         [ARG0_0]                       ….                    [ARG0_4]             ….                
+	 *	
+	 *
+	 *FIELDS	
+     *[NAME]  [STANDS FOR]         [RANGE]           [USE]                                    
+     *  P     PackageType           2**1 (2)           For specifying if it’s binary or ASCII.  0 for ASCII, 1 for Binary
+     *  T     Order Type            2**3 (9)                
+     *  SUB   Order subType         2**3 (9)             
+     *  ARG   Argument              2**8 (256)
+	*/
 	
 	/* ORDERS
 	 * 
@@ -32,7 +28,7 @@ public class Package {
 	 * 		INCREMENT - give 3 arguments each translated to Unsigned int x,y,z.
 	 * 
 	 * [CAMERA_MOVEMENT]
-	 * 		VALUES -
+	 * 		VALUES - 
 	 * 		INCREMENT-
 
 	 * 
@@ -53,17 +49,17 @@ public class Package {
 	private BinaryByte arguments[] = null;
 	
 	
-	//CONSTRUCTOR
+	//CONSTRUCTORS
 	//for parsing from raw data
-	Package(BinaryByte input[]) throws PackageException{
+	public Package(BinaryByte input[]) throws PackageException{
 		rawData=input;
 		parsePackage();
 	}
+	
 	//for creating a package
 	public Package(PackageType pT,OrderType oT,OrderSubType oST,BinaryByte arguments[]) {
 		
 	}
-	
 	
 	private void parsePackage() throws PackageException {
 		//check if there is any data to parse at all
@@ -110,8 +106,6 @@ public class Package {
 			case 2:this.orderType= OrderType.TOOLBAR; break;
 			case 3:this.orderType= OrderType.INVENTORY; break;
 		}
-		
-		
 		return this.orderType;
 	}
 	

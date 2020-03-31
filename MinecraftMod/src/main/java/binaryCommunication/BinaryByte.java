@@ -1,4 +1,4 @@
-package interpretation;
+package binaryCommunication;
 
 public class BinaryByte {
 	public static int BYTE_SIZE =8;
@@ -21,7 +21,6 @@ public class BinaryByte {
 		if(s.length()>BYTE_SIZE) {return;}
 		//remove begining zero's
 		while(s.length()!=0  && s.charAt(0)=='0' ) {s=s.substring(1);}
-		
 		
 		int c=(BYTE_SIZE-1)-(s.length()-1);
 		for(int i=0;i<s.length();i++) {

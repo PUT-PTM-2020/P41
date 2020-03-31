@@ -1,9 +1,9 @@
 package interpretation;
 
-import java.nio.charset.StandardCharsets;
 
-import com.serial.serialmod.SerialInterface;
-
+import binaryCommunication.BinaryByte;
+import binaryCommunication.Package;
+import binaryCommunication.PackageException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -43,19 +43,13 @@ public class SerialMessageInterpreter {
 				switch(pack.getOrderSubType())
 				{
 					case VALUES: movePlayer(pack.getArguments()[0]); break;
-					case INCREMENT: /*dunno*/ break;
 					default:
 				}
 				return;
 				
 			//CAMERA MOVEMENT
 			case CAMERA_MOVEMENT:
-				switch(pack.getOrderSubType())
-				{
-					case VALUES: moveCamera(pack.getArguments()[0]); break;
-					case INCREMENT: moveCamera(pack.getArguments()[0]); break;
-					default:
-				}
+				moveCamera(pack.getArguments());
 				return;
 			default: return;
 		}
@@ -74,8 +68,23 @@ public class SerialMessageInterpreter {
 		pc.sprinting(movementClues.bitAt(6));
 	}
 	
-	 public static void moveCamera(BinaryByte movementClues) {
-		//WSADUBS (W,A,S,D,Up,Below,SPRINTING)
+	public static void moveCamera(BinaryByte [] arguments){
+		//around takes values between [0,360] 
+		//because first byte can only go up to 255, first bit of the next byte is used as the most significant bit
+		float around= BinaryByte.getInt(arguments[0])+256*(arguments[1].bitAt(0)? 1 : 0);
+		//the remaining 7 bits are used to make fix point decimal 
+		around+=BinaryByte.getInt(arguments[1],1,7)/128;
+		
+		//updown  takes values [-90,90]
+		float upDown= BinaryByte.getInt(arguments[2],1,7);
+		if(arguments[2].bitAt(0)==true) {upDown*=-1;}
+		//next byte used as fixed point decimal
+		upDown+=BinaryByte.getInt(arguments[3])/256;
+		pc.setCamera(around,upDown);
+	}
+	
+	 public static void incrementCamera(BinaryByte movementClues) {
+
 		/* if(movementClues.bitAt(0)) {moveCameraUp();}
 		 if(movementClues.bitAt(1)) {player.rotationPitch=player.rotationPitch+CAMERA_PITCH_INCREMENT;}
 		 if(movementClues.bitAt(2)) {player.rotationPitch=player.rotationPitch-CAMERA_PITCH_INCREMENT;}

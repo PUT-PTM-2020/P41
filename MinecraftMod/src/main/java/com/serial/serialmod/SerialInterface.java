@@ -2,7 +2,7 @@ package com.serial.serialmod;
 
 
 
-import interpretation.BinaryByte;
+import binaryCommunication.BinaryByte;
 import interpretation.SerialMessageInterpreter;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;

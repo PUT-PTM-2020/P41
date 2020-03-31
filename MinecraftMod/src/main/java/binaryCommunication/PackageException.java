@@ -1,4 +1,4 @@
-package interpretation;
+package binaryCommunication;
 
 public class PackageException extends Exception{
 	

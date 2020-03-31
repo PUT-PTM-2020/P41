@@ -1,6 +1,7 @@
 package commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -8,7 +9,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.serial.serialmod.Serial;
 import com.serial.serialmod.SerialInterface;
 
-import interpretation.BinaryByte;
+import binaryCommunication.BinaryByte;
 import interpretation.SerialMessageInterpreter;
 import jssc.SerialPortException;
 
@@ -38,7 +39,6 @@ public class ModCommands {
 	                return 1;
 	            })
 	        );
-	    	
 	    	//register alias
 	    	dispatcher.register(Commands.literal("s").redirect(allComands));
 	    }	
@@ -190,6 +190,7 @@ public class ModCommands {
 		                return 1;
 		            });	
 		} 
+	    
 	    
 	    public static ArgumentBuilder<CommandSource, ?> registerEchoB() {
 	        return Commands.literal("echoB")
