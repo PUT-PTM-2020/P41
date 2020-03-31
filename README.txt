@@ -26,6 +26,10 @@ MODYFIKACJA:
  - klasa do binarnej komunikacji PortSeryjny->Usart
  - komenda echo <wiadomość>- udaje, że dana wiadomość została odebrana na porcie seryjnym.
  - wysyłanie wiadomości jako łańcuchy binarne
+ 
+ [01.04.2020] Prace nad komunikacją
+  MODYFIKACJA:
+  - interpretacja paczek kontrolujących ruch kamery
 
 
 
