@@ -13,6 +13,10 @@
                                                                         
 PROJEKT PTM 2020
 
+Urządzenia podłączone do STM32F411:
+- HC05 module (USART6)
+- USART-USB converter (USART2)
+
 POSTĘP:
 
 [19.03.2020] Pierwszy commit 
@@ -30,6 +34,11 @@ MODYFIKACJA:
  [01.04.2020] Prace nad komunikacją
   MODYFIKACJA:
   - interpretacja paczek kontrolujących ruch kamery
+  
+  [13.04.2020] Prace nad komunikacją
+  STM:
+  - połączono STM z peryferiami
+  - STM32F411 wysyła wiadomości z modułu USB do modułu Bluetooth, i vice-versa
 
 
 
