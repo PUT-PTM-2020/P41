@@ -159,5 +159,11 @@ public class BitArray {
 		if(size<9) {return (char) getInt(this);}
 		return '_';	
 	}
+
+	
+	//get decimal, as fraction of max value of bitArray
+	public double getDecimal() {
+		return ((double) this.getInt()/(Math.pow(2, this.size))-1);
+	}
 	
 }

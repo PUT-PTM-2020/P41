@@ -72,12 +72,12 @@ public class SerialMessageInterpreter {
 	
 	public static void moveCamera(BitArray[] arguments) throws Exception{
 		float around= arguments[0].getInt();
-		around+=arguments[1].getInt()/Math.pow(2,arguments[1].getSize());
+		around+=arguments[1].getDecimal();
 		
 		
 		float upDown= arguments[3].getInt();
 		if(arguments[2].bitAt(0)==true) {upDown*=-1;}
-		upDown+=BinaryByte.getInt(arguments[3])/Math.pow(2,arguments[3].getSize() );
+		upDown+=arguments[3].getDecimal();
 		
 		pc.setCamera(around,upDown);
 		return;
