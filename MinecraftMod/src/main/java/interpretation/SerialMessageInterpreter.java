@@ -84,14 +84,6 @@ public class SerialMessageInterpreter {
 	}
 	
 	
-	private static void sendRawDataToPlayer(BitArray data[]) {
-		String packet="";
-		for(int i=0;i<data.length;i++) {
-			packet=packet+" | "+data[i].toString();
-		}
-		sendToPlayer(packet);
-	}
-	
 	public static void sendToPlayer(String data) {
         //format and send to player
 		StringTextComponent baseText= new StringTextComponent("");

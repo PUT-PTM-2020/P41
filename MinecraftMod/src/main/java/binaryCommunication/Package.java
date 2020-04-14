@@ -45,7 +45,7 @@ public class Package{
 	 * 	[2] Yaw_decimal_part (9 bits)- interpreted as fraction of it's maximum value. ex. Ydp=123 => 123/2^9=0,240234375
 	 * 	[3] Is_Pitch_Negative? (1 bit)- '1' if it is, '0' if it's not
 	 * 	[4] Pitch_whole_part  (7 bits)- 
-	 * 	[5] Pitch_decimal_part (8 bits)- interpreted as fraction of it's maximum value. ex. Ydp=123 => 123/2^8=0,48046875
+	 * 	[5] Pitch_decimal_part (8 bits)- interpreted as fraction of it's maximum value. ex. Pdp=123 => 123/2^8=0,48046875
 	 * 
 	 *[HOT_BAR]
 	 * DESCRIPTION:
@@ -277,8 +277,8 @@ public class Package{
 						try 
 						{
 						//color arguments basing on their state
-						if(arguments[0].bitAt(i)) {argumentsString+="\\u00A7c"+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF| "; continue;}
-						argumentsString+="\\u00A7a"+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON| ";
+						if(arguments[0].bitAt(i)){argumentsString+="\\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF| ";}
+						else{argumentsString+="\\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON| ";}
 						} 
 						catch (Exception e) { return "Error: Index out of bounds";}
 					} 
