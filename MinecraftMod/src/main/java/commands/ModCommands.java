@@ -10,6 +10,9 @@ import com.serial.serialmod.Serial;
 import com.serial.serialmod.SerialInterface;
 
 import binaryCommunication.BinaryByte;
+import binaryCommunication.BitArray;
+import binaryCommunication.Package.OrderType;
+import binaryCommunication.Package.PackageType;
 import interpretation.SerialMessageInterpreter;
 import jssc.SerialPortException;
 
@@ -30,6 +33,7 @@ public class ModCommands {
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
 	            .then(registerSendB()) //sends a message as binary
 	            .then(registerEchoB()) //sends a message as binary
+	            .then(registerEchoP())
 	            .then(registerDisconnect()) //disconnects from the currently connected port "/serial disconnect"
 	            .then(registerIsConnected()) //shows whether any ports are connected 
 	            .then(registerEcho()) //acts as if written message was received
@@ -224,6 +228,48 @@ public class ModCommands {
 		                return 1;
 		            });	
 		} 
+	    
+	    public static ArgumentBuilder<CommandSource, ?> registerEchoP() {
+	        return Commands.literal("echoP")
+		            	.then(Commands.literal("ASCII")
+		            			.then(Commands.argument("toBeSent", StringArgumentType.string())
+		    			                .executes(ctx -> { 			                	
+		    			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+		    			                	try
+		    			                	{
+		    			                		byte[]  by = toBeSent.getBytes();
+		    			                		BitArray[] data= new BitArray[by.length];
+		    			                		for(int i=0;i<by.length;i++) {
+		    			                			data[i]= new BitArray(by[i]);
+		    			                		}
+		    			                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.ASCII,OrderType.NOTDETERMINED,data));
+		    			                		
+		    			                		
+		    			                		StringTextComponent baseText= new StringTextComponent("");
+		    		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent data: "));
+		    		                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
+		    		                 			
+		    		   
+		    		                 			ctx.getSource().sendFeedback(baseText,false);
+		    			                	}
+		    			                	catch (Exception e) 
+		    			                	{ 
+		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+		    			                	}
+		    			                	return 1;
+		    			                    }))
+			                .executes(ctx -> { 			                	
+			                	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_ASCII_HELP"),false);
+			                	return 1;
+			                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		}
+	    
 	       	
 	    
 	    //SEND

@@ -46,11 +46,15 @@ public class SerialInterface implements SerialPortEventListener
 	}
 	
 	public static void repeat(String value) throws SerialPortException {
-		SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(value.getBytes()));
+		SerialMessageInterpreter.interpret(value.getBytes());
+	}
+	
+	public void echoPackage(binaryCommunication.Package package1) {
+		SerialMessageInterpreter.interpret(package1.getRawData());
 	}
 	
 	public static void repeat(byte[] bytes) throws SerialPortException {
-		SerialMessageInterpreter.interpret((BinaryByte.getBinaryByteArray(bytes)));
+		SerialMessageInterpreter.interpret(bytes);
 	}
 	
 
@@ -58,13 +62,15 @@ public class SerialInterface implements SerialPortEventListener
         if(event.isRXCHAR()){
             try {
             	int value = event.getEventValue();
-                SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(serialPort.readBytes(value)));     
+                SerialMessageInterpreter.interpret(serialPort.readBytes(value));     
             } catch (SerialPortException ex) {
                 System.out.println(ex);
             }
             
         }
     }
+
+
 }
 
 

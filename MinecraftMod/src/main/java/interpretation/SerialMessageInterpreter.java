@@ -2,8 +2,8 @@ package interpretation;
 
 
 import binaryCommunication.BinaryByte;
+import binaryCommunication.BitArray;
 import binaryCommunication.Package;
-import binaryCommunication.PackageException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -11,54 +11,50 @@ public class SerialMessageInterpreter {
 	private static PlayerController pc = new PlayerController();
 
 	
-	public static void interpret(BinaryByte data[]) {
+	public static void interpret(byte data[]) {
 		try {
 			Package pack = new Package(data);
 			sendToPlayer(pack.toString());
 			execute(pack);
-		} catch (PackageException e) {
+		} catch (Exception e) {
 			sendToPlayer(e.toString());
 		}	
 	}
 	
 
-	public static void execute(Package pack) {
+	public static void execute(Package pack) throws Exception {
 		//IF it's an ASCII package
 		if(pack.getPackageType()==Package.PackageType.ASCII) 
 		{
-			BinaryByte bytes [] =pack.getArguments();
-			
+			BitArray[] bytes = pack.getArguments();
 			String result ="";
 			for(int i=0;i<bytes.length;i++) 
 			{
-				result=result+(char) BinaryByte.getInt(bytes[i]); 
+				result=result+bytes[i].getASCII(); 
 			}
-			sendToPlayer(result);		
+			sendToPlayer(result);	
+			return;
 		}
 		
 		//BINARY PACKAGES
 		switch(pack.getOrderType()) {
-			//PLAYER MOVEMENT
 			case PLAYER_MOVEMENT:
-				switch(pack.getOrderSubType())
-				{
-					case VALUES: movePlayer(pack.getArguments()[0]); break;
-					default:
-				}
+				movePlayer(pack.getArguments()[0]); 
 				return;
-				
-			//CAMERA MOVEMENT
 			case CAMERA_MOVEMENT:
 				moveCamera(pack.getArguments());
+				return;
+			case HOT_BAR:
+				selectItem(pack.getArguments()[0]);
 				return;
 			default: return;
 		}
 		
 	}
 	
-	public static void movePlayer(BinaryByte movementClues)
+	public static void movePlayer(BitArray movementClues) throws Exception
 	{
-		//WSADUBS (W,A,S,D,Up,Below,SPRINTING)
+		//WSADJCS (W,A,S,D,Jump,Crouch,Sprint)
 		pc.setForward(movementClues.bitAt(0));
 		pc.setBackward(movementClues.bitAt(1));
 		pc.setLeft(movementClues.bitAt(2));
@@ -68,33 +64,27 @@ public class SerialMessageInterpreter {
 		pc.sprinting(movementClues.bitAt(6));
 	}
 	
-	public static void moveCamera(BinaryByte [] arguments){
-		//around takes values between [0,360] 
-		//because first byte can only go up to 255, first bit of the next byte is used as the most significant bit
-		float around= BinaryByte.getInt(arguments[0])+256*(arguments[1].bitAt(0)? 1 : 0);
-		//the remaining 7 bits are used to make fix point decimal 
-		around+=BinaryByte.getInt(arguments[1],1,7)/128;
-		
-		//updown  takes values [-90,90]
-		float upDown= BinaryByte.getInt(arguments[2],1,7);
-		if(arguments[2].bitAt(0)==true) {upDown*=-1;}
-		//next byte used as fixed point decimal
-		upDown+=BinaryByte.getInt(arguments[3])/256;
-		pc.setCamera(around,upDown);
+	public static void selectItem(BitArray hotBarClues) throws Exception {
+		if(hotBarClues.bitAt(0)) {pc.nextTool();return;}
+		pc.prevTool();
 	}
 	
-	 public static void incrementCamera(BinaryByte movementClues) {
-
-		/* if(movementClues.bitAt(0)) {moveCameraUp();}
-		 if(movementClues.bitAt(1)) {player.rotationPitch=player.rotationPitch+CAMERA_PITCH_INCREMENT;}
-		 if(movementClues.bitAt(2)) {player.rotationPitch=player.rotationPitch-CAMERA_PITCH_INCREMENT;}
-		 if(movementClues.bitAt(3)) {player.rotationPitch=player.rotationPitch-CAMERA_PITCH_INCREMENT;}
-		 if(movementClues.bitAt(4)) {player.rotationYaw=player.rotationYaw+CAMERA_YAW_INCREMENT ;}
-		 if(movementClues.bitAt(5)) {player.rotationYaw=player.rotationYaw-CAMERA_YAW_INCREMENT ;}
-		 */
-	 }
 	
-	private static void sendRawDataToPlayer(BinaryByte data[]) {
+	public static void moveCamera(BitArray[] arguments) throws Exception{
+		float around= arguments[0].getInt();
+		around+=arguments[1].getInt()/Math.pow(2,arguments[1].getSize());
+		
+		
+		float upDown= arguments[3].getInt();
+		if(arguments[2].bitAt(0)==true) {upDown*=-1;}
+		upDown+=BinaryByte.getInt(arguments[3])/Math.pow(2,arguments[3].getSize() );
+		
+		pc.setCamera(around,upDown);
+		return;
+	}
+	
+	
+	private static void sendRawDataToPlayer(BitArray data[]) {
 		String packet="";
 		for(int i=0;i<data.length;i++) {
 			packet=packet+" | "+data[i].toString();

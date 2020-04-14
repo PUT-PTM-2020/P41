@@ -5,13 +5,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 
 public class PlayerController {
 	
 	private GameSettings gs = null;
 	private PlayerEntity player= null;
-	byte currentItem = 0;
-	int toolNumber = 10;
 	
 	PlayerController() 
 	{ 
@@ -66,30 +65,13 @@ public class PlayerController {
 
 	 
 	//TOOLS
-	 public void selectTool(int toolIndex) {
-		 currentItem= (byte) (toolIndex & 0x00);
-		 updateSelection();
-	 }
 	 public void nextTool() {
-		currentItem= (byte) ((currentItem & 0x01)%toolNumber);
-		updateSelection();
+		 player.inventory.changeCurrentItem(10);
 	 }
 	 public void prevTool() {
-		 if(currentItem ==0x00) {currentItem= (byte) toolNumber; return;}
-		 currentItem= (byte) (currentItem & -(0x01));
-		 updateSelection();
-	 }
-	 public int getTool() {
-		int result =  currentItem & 0xFF;
-		return result;
-	 } 
-	 public void updateSelection(){
-		 player.inventory.currentItem= (int) currentItem;
+		 player.inventory.changeCurrentItem(-10);
 	 }
 
-
-	 
-	//EQ
 	 
 	 //CRAFTING
 	   
