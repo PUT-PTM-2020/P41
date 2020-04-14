@@ -35,12 +35,16 @@ MODYFIKACJA:
   MODYFIKACJA:
   - interpretacja paczek kontrolujących ruch kamery
   
-  [13.04.2020] Łączenie Peryferiów
+ [13.04.2020] Łączenie Peryferiów i Optyamlizacja Paczki
   STM:
   - połączono STM z peryferiami
     - moduł HC05  (USART6)
     - konwerter USART-USB (USART2)
   - STM32F411 wysyła wiadomości z modułu USB do modułu Bluetooth, i vice-versa
+  MODYFIKACJA:
+  - usunięcie pola podTypu
+  - możliwość tworzenia paczek i wysyłania komendą /serial echoP <typPaczki> <typRozkazu> <arg1> <arg2> itd.
+  - obsługa ekwipunku
 
 
 NAPOTKANE PROBLEMY:
