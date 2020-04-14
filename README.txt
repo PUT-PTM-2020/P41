@@ -35,7 +35,7 @@ MODYFIKACJA:
   MODYFIKACJA:
   - interpretacja paczek kontrolujących ruch kamery
   
- [13.04.2020] Łączenie Peryferiów i Optyamlizacja Paczki
+ [13.04.2020] Łączenie Peryferiów i Optymalizacja Paczki
   STM:
   - połączono STM z peryferiami
     - moduł HC05  (USART6)
@@ -44,7 +44,7 @@ MODYFIKACJA:
   MODYFIKACJA:
   - usunięcie pola podTypu
   - możliwość tworzenia paczek i wysyłania komendą /serial echoP <typPaczki> <typRozkazu> <arg1> <arg2> itd.
-  - obsługa ekwipunku
+  - obsługa paska ekwipunku
 
 
 NAPOTKANE PROBLEMY:
