@@ -51,14 +51,25 @@ public class BitArray {
 	
 	//
 	public static BitArray bitArrayFromInt(int i,int onBits){
-		Integer a= new Integer(i);
-		BinaryByte temp= new BinaryByte(a.byteValue());
-		String tempString=temp.toString();
-		
-		//cut to apropriate size
-		while(tempString.length()>onBits){tempString=tempString.substring(1);}
-		return new BitArray(tempString,false);
+		return new BitArray(i,onBits);
 	}
+	
+	//convert byte java type to one BitArray
+	public BitArray(int value,int onBits){
+		this.size=onBits;
+		this.values =new ArrayList<Boolean>(Arrays.asList(new Boolean[this.size]));
+		Collections.fill(values, Boolean.FALSE);
+		System.out.println("\nKoduje: "+value);
+		int counter=this.size-1;
+		while(value!=0 && counter>=0)
+		{
+			this.values.set(counter,value%2 == 1);
+			counter--;
+			value=value/2;
+		}
+		System.out.println("\nSize: "+size+"\nTablica: "+values.toString());
+	}
+	
 	
 	
 	//convert byte java type to one BitArray
@@ -80,7 +91,7 @@ public class BitArray {
 	}
 	
 	public BitArray subBitArray(int indexStart,int indexEnd) {
-		int sizeOfSub=indexEnd-indexStart;
+		int sizeOfSub=(indexEnd-indexStart)+1;
 		return bitArrayFromInt(this.getInt(indexStart, indexEnd), sizeOfSub);
 	}
 	
@@ -98,8 +109,7 @@ public class BitArray {
 			{
 			if(b.values.get(i)){result= (int) (result +Math.pow(2, counter));}		
 			counter=counter+1;
-			}
-			
+			}		
 		}
 		return result;
 	}

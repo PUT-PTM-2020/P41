@@ -55,13 +55,13 @@ public class SerialMessageInterpreter {
 	public static void movePlayer(BitArray movementClues) throws Exception
 	{
 		//WSADJCS (W,A,S,D,Jump,Crouch,Sprint)
-		pc.setForward(movementClues.bitAt(0));
-		pc.setBackward(movementClues.bitAt(1));
-		pc.setLeft(movementClues.bitAt(2));
-		pc.setRight(movementClues.bitAt(3));
-		pc.jumping(movementClues.bitAt(4));
-		pc.sneaking(movementClues.bitAt(5));
-		pc.sprinting(movementClues.bitAt(6));
+		pc.setForward(movementClues.bitAt(1));
+		pc.setBackward(movementClues.bitAt(2));
+		pc.setLeft(movementClues.bitAt(3));
+		pc.setRight(movementClues.bitAt(4));
+		pc.jumping(movementClues.bitAt(5));
+		pc.sneaking(movementClues.bitAt(6));
+		pc.sprinting(movementClues.bitAt(7));
 	}
 	
 	public static void selectItem(BitArray hotBarClues) throws Exception {

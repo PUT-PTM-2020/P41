@@ -1,6 +1,7 @@
 package commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -254,13 +255,22 @@ public class ModCommands {
 		    			                	}
 		    			                	catch (Exception e) 
 		    			                	{ 
-		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the package"),false);
 		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
 		    			                	}
 		    			                	return 1;
 		    			                    }))
 			                .executes(ctx -> { 			                	
 			                	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_ASCII_HELP"),false);
+			                	return 1;
+			                    }))
+		            	.then(Commands.literal("BINARY")
+		            			.then(playerMovement())
+		            			.then(cameraMovement())
+		            			.then(hotBar())
+		            			.then(inventory())
+			                .executes(ctx -> { 			                	
+			                	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_BINARY_HELP"),false);
 			                	return 1;
 			                    }))
 		            .executes(ctx -> {
@@ -271,6 +281,172 @@ public class ModCommands {
 		}
 	    
 	       	
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> playerMovement() {
+	    return Commands.literal("PLAYER_MOVEMENT")
+		.then(Commands.argument("WSADJCS", StringArgumentType.string())
+                .executes(ctx -> { 			                	
+                	String movementClues = StringArgumentType.getString(ctx, "WSADJCS");
+                	try {
+                		if(movementClues.length()!=7) {throw new Exception("Movement Clues must have 7 bits!");}
+                		for(int i=0;i<movementClues.length();i++) {if(movementClues.charAt(i)!='0' && movementClues.charAt(i)!='1') {throw new Exception("Only ones and zeroes allowed!");}}
+    	
+                		BitArray[] data = {new BitArray(movementClues, false)};
+                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data));
+                		
+                		
+                		StringTextComponent baseText= new StringTextComponent("");
+             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent movement clues: "));
+             			baseText.appendSibling(new StringTextComponent("\u00A7e"+movementClues));
+             			
+             			ctx.getSource().sendFeedback(baseText,false);	
+                		
+                	}
+                	catch (Exception e) 
+                	{ 
+                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+                	}
+                
+                	return 1;
+                    }))
+		
+        .executes(ctx -> { 
+        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+        	return 1;
+            });
+	    }
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> cameraMovement() {
+		    return Commands.literal("CAMERA_MOVEMENT")
+			.then(Commands.argument("Yaw", FloatArgumentType.floatArg())
+					.then(Commands.argument("Pitch", FloatArgumentType.floatArg())
+			
+			                .executes(ctx -> { 			                	
+			                	float yaw = FloatArgumentType.getFloat(ctx, "Yaw");
+			                	float pitch = FloatArgumentType.getFloat(ctx, "Pitch");
+			                	try {
+			                	
+			                		Serial.serialInterface.echoPackage(binaryCommunication.Package.createCameraMovementPackage(yaw, pitch));
+			                		StringTextComponent baseText= new StringTextComponent("");
+			             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent yaw/pitch: "));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+yaw));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7a"+"/"));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+pitch));
+			             			
+			             			ctx.getSource().sendFeedback(baseText,false);	
+			                		
+			                	}
+			                	catch (Exception e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+			                	}
+			                	
+			                	
+			                	return 1;
+			                    }))
+
+					
+	                .executes(ctx -> { 			                	
+	                	float yaw = FloatArgumentType.getFloat(ctx, "Yaw");
+	                	try {
+	                	
+	                		Serial.serialInterface.echoPackage(binaryCommunication.Package.createCameraMovementPackage(yaw, 0));
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent yaw/pitch: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+yaw));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7a"+"/"));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+"0.0"));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> hotBar() {
+		    return Commands.literal("PLAYER_MOVEMENT")
+			.then(Commands.argument("WSADJCS", StringArgumentType.string())
+	                .executes(ctx -> { 			                	
+	                	String movementClues = StringArgumentType.getString(ctx, "WSADJCS");
+	                	try {
+	                		if(movementClues.length()!=7) {throw new Exception("Movement Clues must have 7 bits!");}
+	                		for(int i=0;i<movementClues.length();i++) {if(movementClues.charAt(i)!='0' && movementClues.charAt(i)!='1') {throw new Exception("Only ones and zeroes allowed!");}}
+	    	
+	                		BitArray[] data = {new BitArray(movementClues, false)};
+	                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data));
+	                		
+	                		
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent movement clues: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+movementClues));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
+	    public static ArgumentBuilder<CommandSource, ?> inventory() {
+		    return Commands.literal("PLAYER_MOVEMENT")
+			.then(Commands.argument("WSADJCS", StringArgumentType.string())
+	                .executes(ctx -> { 			                	
+	                	String movementClues = StringArgumentType.getString(ctx, "WSADJCS");
+	                	try {
+	                		if(movementClues.length()!=7) {throw new Exception("Movement Clues must have 7 bits!");}
+	                		for(int i=0;i<movementClues.length();i++) {if(movementClues.charAt(i)!='0' && movementClues.charAt(i)!='1') {throw new Exception("Only ones and zeroes allowed!");}}
+	    	
+	                		BitArray[] data = {new BitArray(movementClues, false)};
+	                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data));
+	                		
+	                		
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent movement clues: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+movementClues));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
 	    
 	    //SEND
 	    public static ArgumentBuilder<CommandSource, ?> registerSend() {
