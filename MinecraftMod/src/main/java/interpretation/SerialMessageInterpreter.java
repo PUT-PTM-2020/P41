@@ -50,7 +50,7 @@ public class SerialMessageInterpreter {
 				selectItem(pack.getArguments()[0]);
 				return;
 			case LEFT_RIGHT_CLICK:
-				toogleLeftRightClick(pack.getArguments()[0]);
+				toogleLeftRightClick(pack.getArguments());
 				return;
 			default: return;
 		}
@@ -58,9 +58,9 @@ public class SerialMessageInterpreter {
 	}
 	
 	
-	private static void toogleLeftRightClick(BitArray bitArray) throws Exception {
-		pc.leftClicking(bitArray.bitAt(0));
-		pc.rightClicking(bitArray.bitAt(1));
+	private static void toogleLeftRightClick(BitArray[] arguments) throws Exception {
+		pc.leftClicking(arguments[0].bitAt(0));
+		pc.rightClicking(arguments[1].bitAt(0));
 	}
 
 
@@ -73,9 +73,9 @@ public class SerialMessageInterpreter {
 	{
 		//WSADJCS (W,A,S,D,Jump,Crouch,Sprint)
 		pc.setForward(movementClues.bitAt(0));
-		pc.setBackward(movementClues.bitAt(2));
-		pc.setLeft(movementClues.bitAt(3));
-		pc.setRight(movementClues.bitAt(4));
+		pc.setBackward(movementClues.bitAt(1));
+		pc.setLeft(movementClues.bitAt(2));
+		pc.setRight(movementClues.bitAt(3));
 		pc.jumping(movementClues.bitAt(4));
 		pc.sneaking(movementClues.bitAt(5));
 		pc.sprinting(movementClues.bitAt(6));
@@ -89,7 +89,7 @@ public class SerialMessageInterpreter {
 	
 	public static void moveCamera(BitArray[] arguments) throws Exception{
 		float around= (float) ((float) arguments[0].getInt()/Math.pow(2, arguments[0].getSize())*360);
-		float upDown= (float) ((float) arguments[1].getInt()/Math.pow(2, arguments[1].getSize())*180)-90;
+		float upDown= (float) ((float) arguments[1].getInt()/(Math.pow(2, arguments[1].getSize()))*180)-90;
 		
 		pc.setCamera(around,upDown);
 		return;

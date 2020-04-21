@@ -46,17 +46,17 @@ public class PlayerController {
 		 public void startJumping() { KeyBinding.setKeyBindState(gs.keyBindJump.getKey(), true);}
 		 public void stopJumping()  { KeyBinding.setKeyBindState(gs.keyBindJump.getKey(), false);}  
 		 //sneaking
-		 public void sneaking(boolean b) {/*is this even possible?*/}
+		 public void sneaking(boolean b) {}
 	 
 	//LEFT/RIGHT CLICK
 		 //left
 		 public void startLeftClicking() { KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), true);}
 		 public void stopLeftClicking() {KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), false);}
-		 public void leftClicking(boolean b) {KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), b);}
+		 public void leftClicking(boolean b) {System.out.print("LEFT");KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), b);}
 		 //right
 		 public void startRightClicking() { KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), true);}
 		 public void stopRightClicking() {KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), false);}
-		 public void rightClicking(boolean b) {KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), b);}
+		 public void rightClicking(boolean b) {System.out.print("RIGHT");KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), b);}
 	    	
 	//CAMERA  
 		public void setCamera(float around,float upDown) {setCameraAround(around);setCameraUpDown(upDown);}
@@ -65,8 +65,9 @@ public class PlayerController {
 
 	 
 	//TOOLS
-		 public void nextTool() { player.inventory.changeCurrentItem(10); }
-		 public void prevTool() { player.inventory.changeCurrentItem(-10); }
+	
+		 public void nextTool() { player.inventory.changeCurrentItem(-10); }
+		 public void prevTool() { player.inventory.changeCurrentItem(10); }
 
 	 
 	 //CRAFTING

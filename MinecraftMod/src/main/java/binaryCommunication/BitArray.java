@@ -49,6 +49,13 @@ public class BitArray {
 		}
 	}
 	
+	//bit array from boolan
+	public BitArray(boolean b) {
+		this.size=1;
+		values =new ArrayList<Boolean>(Arrays.asList(new Boolean[this.size]));
+		Collections.fill(values, b);
+	}
+	
 	//
 	public static BitArray bitArrayFromInt(int i,int onBits){
 		return new BitArray(i,onBits);
@@ -56,18 +63,20 @@ public class BitArray {
 	
 	//convert byte java type to one BitArray
 	public BitArray(int value,int onBits){
-		this.size=onBits;
-		this.values =new ArrayList<Boolean>(Arrays.asList(new Boolean[this.size]));
-		Collections.fill(values, Boolean.FALSE);
-		System.out.println("\nKoduje: "+value);
-		int counter=this.size-1;
-		while(value!=0 && counter>=0)
-		{
-			this.values.set(counter,value%2 == 1);
-			counter--;
-			value=value/2;
+		if(onBits!=0) {
+			this.size=onBits;
+			this.values =new ArrayList<Boolean>(Arrays.asList(new Boolean[this.size]));
+			Collections.fill(values, Boolean.FALSE);
+			System.out.println("\nKoduje: "+value);
+			int counter=this.size-1;
+			while(value!=0 && counter>=0)
+			{
+				this.values.set(counter,value%2 == 1);
+				counter--;
+				value=value/2;
+			}
+			System.out.println("\nSize: "+size+"\nTablica: "+values.toString());
 		}
-		System.out.println("\nSize: "+size+"\nTablica: "+values.toString());
 	}
 	
 	
@@ -114,19 +123,21 @@ public class BitArray {
 		return result;
 	}
 	public byte[] getByteArray(){
-		byte[] result= new byte[(this.size/BYTE_SIZE)+1];
+		byte[] result;
+		if(this.getSize()%8==0) {result= new byte[(this.getSize()/BYTE_SIZE)];}
+		else {result= new byte[(this.getSize()/BYTE_SIZE)+1];}
+		
 		
 		int index=0;
 		int resultIndex=0;
 		Integer a;
-		while(index<this.size-1)
+		while(index<this.getSize()-1)
 		{
 			a= new Integer(this.getInt(index,index+BYTE_SIZE-1));
 			result[resultIndex]= a.byteValue();
 			resultIndex++;
 			index=index+BYTE_SIZE;
 		}
-	
 		return result;
 	}
 	
@@ -139,7 +150,7 @@ public class BitArray {
 	}
 
 	
-	public int getSize() {return this.size;}
+	public int getSize() {return this.values.size();}
 	
 	public String toString() {
 		String result="";

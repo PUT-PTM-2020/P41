@@ -63,7 +63,7 @@ public class Package{
 		public static enum OrderType {NOTDETERMINED,PLAYER_MOVEMENT,CAMERA_MOVEMENT,CAMERA_RESET,LEFT_RIGHT_CLICK,HOT_BAR,INVENTORY};
 		private static String[] PLAYER_MOVEMENT_ARGUMENTS ={"Forward","Backwards","Left","Right","Jump","Crouch","Sprint"};
 		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw","Pitch"};
-		private static String[] HOT_BAR_ARGUMENTS ={"Previous/Next"};
+		private static String[] HOT_BAR_ARGUMENTS ={"Next/Previous"};
 		private static String[] LEFT_RIGHT_CLICK_ARGUMENTS ={"Left","Right"};
 		
 		private static int PACKAGE_TYPE_LENGHT=1;
@@ -138,7 +138,7 @@ public class Package{
 			
 			if(this.orderType==OrderType.PLAYER_MOVEMENT){
 				this.arguments= new BitArray[1];
-				arguments[0]=new BitArray(rawData).subBitArray(8,15);
+				arguments[0]=new BitArray(rawData).subBitArray(8,14);
 				return;
 			}
 			
@@ -162,7 +162,7 @@ public class Package{
 			}
 			
 			if(this.orderType==OrderType.LEFT_RIGHT_CLICK){
-				this.arguments= new BitArray[1];
+				this.arguments= new BitArray[2];
 				//left click toogle
 				this.arguments[0]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+LEFT_RIGHT_CLICK_ARGUMENT_LENGHT-1);
 				//right click toogle
@@ -195,24 +195,27 @@ public class Package{
 			this.orderType=oT;
 			this.arguments=arguments;
 			
-	
 			BitArray temp= getPackageTypeAsBitArray();
 			temp.concatenate(getOrderTypeAsBitArray());
 			
 			if(arguments!=null) {
 				//for types in which special arguments are absent
-				if(this.orderType==orderType.INVENTORY || this.orderType==orderType.PLAYER_MOVEMENT ) 
+				if(this.orderType==orderType.INVENTORY || this.orderType==orderType.PLAYER_MOVEMENT || this.packageType==packageType.ASCII) 
 				{
 					temp.concatenate(BitArray.bitArrayFromInt(0,SPECIAL_ARGUMENT_LENGHT));
 				}
 				for(int i=0;i<arguments.length;i++) {temp.concatenate(arguments[i]);}
 			}
 			
+			//then fill out so it's made out of full bytes
+			int missingToFullByte=8-temp.getSize()%8;
+			System.out.println("\nBrakuje do bajtu: "+missingToFullByte);
+			if(missingToFullByte!=0) {temp.concatenate(BitArray.bitArrayFromInt(0,missingToFullByte));}
 			this.rawData= temp.getByteArray();
 		}
 		
 		private BitArray getPackageTypeAsBitArray() {
-			if(this.packageType==packageType.ASCII) {return BitArray.bitArrayFromInt(0,PACKAGE_TYPE_LENGHT);}
+			if(this.packageType==packageType.ASCII) {return BitArray.bitArrayFromInt(1,PACKAGE_TYPE_LENGHT);}
 			return BitArray.bitArrayFromInt(0,PACKAGE_TYPE_LENGHT);
 		}
 		
@@ -250,7 +253,6 @@ public class Package{
 			return new Package(temp.getByteArray());
 		}
 	    
-	    public static Package createLeftRightClickPackage(boolean leftClick,boolean)
 	
 	
 
@@ -275,8 +277,8 @@ public class Package{
 						try 
 						{
 						//color arguments basing on their state
-						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF ";}
-						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON ";}
+						if(arguments[0].bitAt(i)){argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON ";}
+						else{argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF ";}
 						} 
 						catch (Exception e) { return "Error: Index out of bounds";}
 					} 
@@ -287,15 +289,15 @@ public class Package{
 						try 
 						{
 						//color arguments basing on their state
-						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF ";}
-						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON ";}
+						if(arguments[i].bitAt(0)){argumentsString+="\u00A7a "+LEFT_RIGHT_CLICK_ARGUMENTS[i]+": ON ";}
+						else{argumentsString+="\u00A7c "+LEFT_RIGHT_CLICK_ARGUMENTS[i]+": OFF ";}
 						} 
 						catch (Exception e) { return "Error: Index out of bounds";}
 					} 
 					break;
 				case CAMERA_MOVEMENT: 
 						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[0]+": "+(float) ((float) arguments[0].getInt()/Math.pow(2, arguments[0].getSize())*360);
-						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[1]+": "+(float) (((float) arguments[1].getInt()/Math.pow(2, arguments[1].getSize())*90)-90);
+						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[1]+": "+(float) -90+((float) arguments[1].getInt())/(Math.pow(2, arguments[1].getSize()))*90;
 						
 					break;
 				case HOT_BAR: for(int i=0;i<HOT_BAR_ARGUMENTS.length;i++){argumentsString+=HOT_BAR_ARGUMENTS[i]+": "+arguments[i].toString()+",";} break;			
