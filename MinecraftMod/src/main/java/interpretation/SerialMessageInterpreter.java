@@ -1,7 +1,6 @@
 package interpretation;
 
 
-import binaryCommunication.BinaryByte;
 import binaryCommunication.BitArray;
 import binaryCommunication.Package;
 import net.minecraft.client.Minecraft;
@@ -71,13 +70,8 @@ public class SerialMessageInterpreter {
 	
 	
 	public static void moveCamera(BitArray[] arguments) throws Exception{
-		float around= arguments[0].getInt();
-		around+=arguments[1].getDecimal();
-		
-		
-		float upDown= arguments[3].getInt();
-		if(arguments[2].bitAt(0)==true) {upDown*=-1;}
-		upDown+=arguments[3].getDecimal();
+		float around= (float) ((float) arguments[0].getInt()/Math.pow(2, arguments[0].getSize())*360);
+		float upDown= (float) ((float) arguments[1].getInt()/Math.pow(2, arguments[1].getSize())*180)-90;
 		
 		pc.setCamera(around,upDown);
 		return;

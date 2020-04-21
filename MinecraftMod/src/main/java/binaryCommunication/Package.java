@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 /**
 * @author      Mateusz Stelmasiak <mateusz.stelmasia@gmail.com>
-* @version     1.1                 
+* @version     1.2                
 * @since       1.0   
 *  
 */
@@ -13,10 +13,10 @@ import java.util.Arrays;
 public class Package{
 	
 	/*STRUCTURE
-     * BYTE         BYTE[0]        BYTE[1]     BYTE[2]     BYTE[3]     BYTE[4]     BYTE[5]     BYTE[6]     BYTE[7]    
+     * BYTE          BIT 0           BIT 1       BIT2       BIT3         BIT4     BIT5        BIT6        BIT7    
      * 0              [A]            [T0]        [T1]        [T2]        [T3]     [S_ARG[0]]  [S_ARG[1]]  [S_ARG[2]]
-     * 1+          [ARG_0[0]]                          ….                         [ARG_0[5]]                  ….                
-	 *	
+     * 1          [ARG_0[0]]                          ….                         [ARG_0[5]]                  ….                
+	 *+			  [ARG_1[0]] ...
 	 *
 	 *FIELDS	
      *[NAME]  [STANDS FOR]         [RANGE]           [USE]                                    
@@ -41,11 +41,8 @@ public class Package{
 	 *  Yaw controls player's rotation around their own axis, takes values in [0-360). 
 	 *  Pitch controls player's head tilt, takes values in [-90-90]  !NEGATIVE VALUES CORRESPOND TO AN UPWARD TILT!
 	 * ARGUMENTS:
-	 * 	[1] Yaw_whole_part (9 bits)- 
-	 * 	[2] Yaw_decimal_part (9 bits)- interpreted as fraction of it's maximum value. ex. Ydp=123 => 123/2^9=0,240234375
-	 * 	[3] Is_Pitch_Negative? (1 bit)- '1' if it is, '0' if it's not
-	 * 	[4] Pitch_whole_part  (7 bits)- 
-	 * 	[5] Pitch_decimal_part (8 bits)- interpreted as fraction of it's maximum value. ex. Pdp=123 => 123/2^8=0,48046875
+	 * 	[1] Yaw (14 bits)
+	 * 	[4] Pitch (13 bits)
 	 * 
 	 *[HOT_BAR]
 	 * DESCRIPTION:
@@ -63,16 +60,14 @@ public class Package{
 		public static enum PackageType {NOTDETERMINED,ASCII,BINARY};
 		public static enum OrderType {NOTDETERMINED,PLAYER_MOVEMENT,CAMERA_MOVEMENT,HOT_BAR,INVENTORY};
 		private static String[] PLAYER_MOVEMENT_ARGUMENTS ={"Forward","Backwards","Left","Right","Jump","Crouch","Sprint"};
-		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw_Whole","Yaw_Decimal","Pitch_isNegative","Pitch_Whole","Pitch_Decimal"};
+		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw","Pitch"};
 		private static String[] HOT_BAR_ARGUMENTS ={"Left/Right","Previous/Next"};
 		
 		private static int PACKAGE_TYPE_LENGHT=1;
 		private static int ORDER_TYPE_LENGHT=4;
 		private static int SPECIAL_ARGUMENT_LENGHT=3;
-		private static int YAW_WHOLE_PART_LENGHT=9;
-		private static int YAW_DECIMAL_PART_LENGHT=9;
-		private static int PITCH_WHOLE_PART_LENGHT=7;
-		private static int PITCH_DECIMAL_PART_LENGHT=8;
+		private static int YAW_LENGHT=14;
+		private static int PITCH_LENGHT=13;
 		private static int HOT_BAR_ARGUMENT_LENGHT=2;
 	
 	
@@ -96,7 +91,7 @@ public class Package{
 		public Package(byte input[]) throws Exception{
 			if(input==null) {throw new Exception("No data in package!");}
 			this.rawData=input;
-			
+
 			parsePackageType();  
 			parseOrderType(); 
 			parseArguments();
@@ -138,32 +133,24 @@ public class Package{
 			if(this.orderType==OrderType.PLAYER_MOVEMENT){
 				this.arguments= new BitArray[1];
 				arguments[0]=new BitArray(rawData).subBitArray(8,16);
-				
 				return;
 			}
 			
 			if(this.orderType==OrderType.CAMERA_MOVEMENT){
 				//intiialize the arguments list with 4 indecees
-				this.arguments= new BitArray[5];
+				this.arguments= new BitArray[2];
 				
 				//AROUND
 				//around takes values between [0,360] 
 				BitArray allArgs= new BitArray(rawData);
-				//because the one byte can only go up to 255, Special Arguments are used to make up the 9 bit value
+
 				int beginingIndex=PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT;
-				arguments[0]= allArgs.subBitArray(beginingIndex,beginingIndex+YAW_WHOLE_PART_LENGHT-1); //the whole part
-				beginingIndex+=YAW_WHOLE_PART_LENGHT;
-				arguments[1]= allArgs.subBitArray(beginingIndex,beginingIndex+YAW_DECIMAL_PART_LENGHT-1); //the fixed floating point
-				beginingIndex+=YAW_DECIMAL_PART_LENGHT;
-				
+				arguments[0]= allArgs.subBitArray(beginingIndex,beginingIndex+YAW_LENGHT-1); //the whole part
+				beginingIndex+=YAW_LENGHT;
 				
 				//UPDOWN
 				//updown  takes values [-90,90]
-				arguments[2]= allArgs.subBitArray(beginingIndex,beginingIndex); //one bit argument (1 if it is a negative number)
-				beginingIndex+=1;
-				arguments[3]= allArgs.subBitArray(beginingIndex,beginingIndex+PITCH_WHOLE_PART_LENGHT-1);
-				beginingIndex+=PITCH_WHOLE_PART_LENGHT;
-				arguments[4]= allArgs.subBitArray(beginingIndex,beginingIndex+PITCH_DECIMAL_PART_LENGHT-1);
+				arguments[1]= allArgs.subBitArray(beginingIndex,beginingIndex+PITCH_LENGHT-1);
 				
 				return;
 			}
@@ -236,21 +223,14 @@ public class Package{
 			
 			//ADD ARGUMENTS
 			//yaw/around
-			int wholePart=(int) yaw;
-			int decimalPart= (int) (((float)(yaw-wholePart))*Math.pow(2,YAW_DECIMAL_PART_LENGHT));
-			temp.concatenate(BitArray.bitArrayFromInt(wholePart,YAW_WHOLE_PART_LENGHT));
-			temp.concatenate(BitArray.bitArrayFromInt(decimalPart,YAW_DECIMAL_PART_LENGHT));
+			int forPackage= (int) ((float) (yaw/360)*Math.pow(2,YAW_LENGHT));
+			temp.concatenate(BitArray.bitArrayFromInt(forPackage,YAW_LENGHT));
 			
 			//pitch/udDown
-			//check if it is negative
-			if(pitch<0) {pitch*=-1; temp.concatenate(BitArray.bitArrayFromInt(1,1));}
-			else {temp.concatenate(BitArray.bitArrayFromInt(0,1));}
-			
-			wholePart=(int) pitch;
-			decimalPart= (int) ((pitch-wholePart)*Math.pow(2,PITCH_DECIMAL_PART_LENGHT));
-			temp.concatenate(BitArray.bitArrayFromInt(wholePart,PITCH_WHOLE_PART_LENGHT));
-			temp.concatenate(BitArray.bitArrayFromInt(decimalPart,PITCH_DECIMAL_PART_LENGHT));
-			
+			//move pitch from taking -90-90 to 0-180
+			pitch=pitch+90;
+			forPackage= (int) ((float) ((pitch)/180)*Math.pow(2,PITCH_LENGHT));	
+			temp.concatenate(BitArray.bitArrayFromInt(forPackage,PITCH_LENGHT));
 			return new Package(temp.getByteArray());
 		}
 	
@@ -277,20 +257,16 @@ public class Package{
 						try 
 						{
 						//color arguments basing on their state
-						if(arguments[0].bitAt(i)){argumentsString+="\\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF| ";}
-						else{argumentsString+="\\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON| ";}
+						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF| ";}
+						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON| ";}
 						} 
 						catch (Exception e) { return "Error: Index out of bounds";}
 					} 
 					break;
 				case CAMERA_MOVEMENT: 
-					for(int i=0;i<CAMERA_MOVEMENT_ARGUMENTS.length;i++)
-					{
-						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[i]+": ";
-						//if it's a decimal, convert it to such
-						if(CAMERA_MOVEMENT_ARGUMENTS[i].contains("DECIMAL")){ argumentsString+=Double.toString(arguments[i].getDecimal())+","; continue;}
-						argumentsString+=arguments[i].getInt()+",";
-					} 
+						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[0]+": "+(float) ((float) arguments[0].getInt()/Math.pow(2, arguments[0].getSize())*360);
+						argumentsString+=CAMERA_MOVEMENT_ARGUMENTS[1]+": "+(float) (((float) arguments[1].getInt()/Math.pow(2, arguments[1].getSize())*90)-90);
+						
 					break;
 				case HOT_BAR: for(int i=0;i<HOT_BAR_ARGUMENTS.length;i++){argumentsString+=HOT_BAR_ARGUMENTS[i]+": "+arguments[i].toString()+",";} break;			
 				default: argumentsString= Arrays.toString(arguments);break;

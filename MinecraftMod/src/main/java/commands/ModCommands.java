@@ -28,7 +28,7 @@ public class ModCommands {
 	    	allComands=
 	    			//all commands must begin with /serial <command>
 	    	dispatcher.register(Commands.literal("serial") 
-	    			//the instructions are added in seperate functions
+	    			//the instructions are added in separate functions
 	            .then(registerConnect()) //for example "/serial connect COM12"
 	            .then(registerPortList())//prints all ports for example "/serial ports"
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
