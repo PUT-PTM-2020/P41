@@ -46,8 +46,10 @@ public class Package{
 	 * 
 	 *[HOT_BAR]
 	 * DESCRIPTION:
-	 * 	For controlling the Item hotBar as well as handling left/right clicking.
+	 * 	For controlling the Item hotBar.
 	 * ARGUMENTS:
+	 * 
+	 * [LEFT_RIGHT_CLICK]
 	 *
 	 *[INVENTORY]
 	 * DESCRIPTION:
@@ -58,17 +60,19 @@ public class Package{
 		
 	//HELPER FIELDS
 		public static enum PackageType {NOTDETERMINED,ASCII,BINARY};
-		public static enum OrderType {NOTDETERMINED,PLAYER_MOVEMENT,CAMERA_MOVEMENT,HOT_BAR,INVENTORY};
+		public static enum OrderType {NOTDETERMINED,PLAYER_MOVEMENT,CAMERA_MOVEMENT,CAMERA_RESET,LEFT_RIGHT_CLICK,HOT_BAR,INVENTORY};
 		private static String[] PLAYER_MOVEMENT_ARGUMENTS ={"Forward","Backwards","Left","Right","Jump","Crouch","Sprint"};
 		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw","Pitch"};
-		private static String[] HOT_BAR_ARGUMENTS ={"Left/Right","Previous/Next"};
+		private static String[] HOT_BAR_ARGUMENTS ={"Previous/Next"};
+		private static String[] LEFT_RIGHT_CLICK_ARGUMENTS ={"Left","Right"};
 		
 		private static int PACKAGE_TYPE_LENGHT=1;
 		private static int ORDER_TYPE_LENGHT=4;
 		private static int SPECIAL_ARGUMENT_LENGHT=3;
 		private static int YAW_LENGHT=14;
 		private static int PITCH_LENGHT=13;
-		private static int HOT_BAR_ARGUMENT_LENGHT=2;
+		private static int HOT_BAR_ARGUMENT_LENGHT=1;
+		private static int LEFT_RIGHT_CLICK_ARGUMENT_LENGHT=1;
 	
 	
 	
@@ -113,8 +117,10 @@ public class Package{
 			switch(typeAsInt) {
 				case 1:this.orderType= OrderType.PLAYER_MOVEMENT; break;
 				case 2:this.orderType= OrderType.CAMERA_MOVEMENT; break;
-				case 3:this.orderType= OrderType.HOT_BAR; break;
-				case 4:this.orderType= OrderType.INVENTORY; break;
+				case 3: this.orderType = OrderType.CAMERA_RESET; break;
+				case 4: this.orderType = OrderType.LEFT_RIGHT_CLICK; break;
+				case 5:this.orderType= OrderType.HOT_BAR; break;
+				case 6:this.orderType= OrderType.INVENTORY; break;
 				default:this.orderType= OrderType.NOTDETERMINED; break;
 				}
 			
@@ -132,7 +138,7 @@ public class Package{
 			
 			if(this.orderType==OrderType.PLAYER_MOVEMENT){
 				this.arguments= new BitArray[1];
-				arguments[0]=new BitArray(rawData).subBitArray(8,16);
+				arguments[0]=new BitArray(rawData).subBitArray(8,15);
 				return;
 			}
 			
@@ -155,11 +161,19 @@ public class Package{
 				return;
 			}
 			
+			if(this.orderType==OrderType.LEFT_RIGHT_CLICK){
+				this.arguments= new BitArray[1];
+				//left click toogle
+				this.arguments[0]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+LEFT_RIGHT_CLICK_ARGUMENT_LENGHT-1);
+				//right click toogle
+				this.arguments[1]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+1,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+LEFT_RIGHT_CLICK_ARGUMENT_LENGHT);
+				return;
+			}
+			
 			if(this.orderType==OrderType.HOT_BAR){
 				this.arguments= new BitArray[1];
 				//hotbar uses special Arguments as its only arguments
-				this.arguments[0]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+HOT_BAR_ARGUMENT_LENGHT);
-				
+				this.arguments[0]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+HOT_BAR_ARGUMENT_LENGHT-1);
 				return;
 			}
 			
@@ -206,8 +220,10 @@ public class Package{
 			switch(this.orderType) {
 				case PLAYER_MOVEMENT: return BitArray.bitArrayFromInt(1,ORDER_TYPE_LENGHT);
 				case CAMERA_MOVEMENT: return BitArray.bitArrayFromInt(2,ORDER_TYPE_LENGHT);
-				case HOT_BAR: return BitArray.bitArrayFromInt(3,ORDER_TYPE_LENGHT);
-				case INVENTORY: return BitArray.bitArrayFromInt(4,ORDER_TYPE_LENGHT);
+				case CAMERA_RESET: return BitArray.bitArrayFromInt(3,ORDER_TYPE_LENGHT);
+				case LEFT_RIGHT_CLICK: return BitArray.bitArrayFromInt(4,ORDER_TYPE_LENGHT);
+				case HOT_BAR: return BitArray.bitArrayFromInt(5,ORDER_TYPE_LENGHT);
+				case INVENTORY: return BitArray.bitArrayFromInt(6,ORDER_TYPE_LENGHT);
 				default: return BitArray.bitArrayFromInt(0,ORDER_TYPE_LENGHT);
 			}
 		}
@@ -223,16 +239,18 @@ public class Package{
 			
 			//ADD ARGUMENTS
 			//yaw/around
-			int forPackage= (int) ((float) (yaw/360)*Math.pow(2,YAW_LENGHT));
+			int forPackage= (int) ((float) (yaw/360)*Math.pow(2,YAW_LENGHT)-1);
 			temp.concatenate(BitArray.bitArrayFromInt(forPackage,YAW_LENGHT));
 			
 			//pitch/udDown
 			//move pitch from taking -90-90 to 0-180
 			pitch=pitch+90;
-			forPackage= (int) ((float) ((pitch)/180)*Math.pow(2,PITCH_LENGHT));	
+			forPackage= (int) ((float) ((pitch)/180)*Math.pow(2,PITCH_LENGHT)-1);	
 			temp.concatenate(BitArray.bitArrayFromInt(forPackage,PITCH_LENGHT));
 			return new Package(temp.getByteArray());
 		}
+	    
+	    public static Package createLeftRightClickPackage(boolean leftClick,boolean)
 	
 	
 
@@ -257,8 +275,20 @@ public class Package{
 						try 
 						{
 						//color arguments basing on their state
-						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF| ";}
-						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON| ";}
+						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF ";}
+						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON ";}
+						} 
+						catch (Exception e) { return "Error: Index out of bounds";}
+					} 
+					break;
+				case LEFT_RIGHT_CLICK: 
+					for(int i=0;i<LEFT_RIGHT_CLICK_ARGUMENTS.length;i++)
+					{
+						try 
+						{
+						//color arguments basing on their state
+						if(arguments[0].bitAt(i)){argumentsString+="\u00A7c "+PLAYER_MOVEMENT_ARGUMENTS[i]+": OFF ";}
+						else{argumentsString+="\u00A7a "+PLAYER_MOVEMENT_ARGUMENTS[i]+": ON ";}
 						} 
 						catch (Exception e) { return "Error: Index out of bounds";}
 					} 

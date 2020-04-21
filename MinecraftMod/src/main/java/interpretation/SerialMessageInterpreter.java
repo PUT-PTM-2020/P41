@@ -43,24 +43,42 @@ public class SerialMessageInterpreter {
 			case CAMERA_MOVEMENT:
 				moveCamera(pack.getArguments());
 				return;
+			case CAMERA_RESET:
+				sendResetCameraPackage();
+				return;
 			case HOT_BAR:
 				selectItem(pack.getArguments()[0]);
+				return;
+			case LEFT_RIGHT_CLICK:
+				toogleLeftRightClick(pack.getArguments()[0]);
 				return;
 			default: return;
 		}
 		
 	}
 	
+	
+	private static void toogleLeftRightClick(BitArray bitArray) throws Exception {
+		pc.leftClicking(bitArray.bitAt(0));
+		pc.rightClicking(bitArray.bitAt(1));
+	}
+
+
+	private static void sendResetCameraPackage() {
+		// TODO Auto-generated method stub	
+	}
+
+
 	public static void movePlayer(BitArray movementClues) throws Exception
 	{
 		//WSADJCS (W,A,S,D,Jump,Crouch,Sprint)
-		pc.setForward(movementClues.bitAt(1));
+		pc.setForward(movementClues.bitAt(0));
 		pc.setBackward(movementClues.bitAt(2));
 		pc.setLeft(movementClues.bitAt(3));
 		pc.setRight(movementClues.bitAt(4));
-		pc.jumping(movementClues.bitAt(5));
-		pc.sneaking(movementClues.bitAt(6));
-		pc.sprinting(movementClues.bitAt(7));
+		pc.jumping(movementClues.bitAt(4));
+		pc.sneaking(movementClues.bitAt(5));
+		pc.sprinting(movementClues.bitAt(6));
 	}
 	
 	public static void selectItem(BitArray hotBarClues) throws Exception {

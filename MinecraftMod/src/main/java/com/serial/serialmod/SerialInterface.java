@@ -41,7 +41,7 @@ public class SerialInterface implements SerialPortEventListener
 	}
 	
 	public void disconnect() throws SerialPortException {
-			serialPort.closePort();
+			if(serialPort.isOpened()) {serialPort.closePort();}
 			serialPort=null;
 	}
 	
