@@ -39,7 +39,7 @@ public class Package{
 	 * DESCRIPTION:
 	 * 	For controlling player's camera on two axis yaw and pitch. 
 	 *  Yaw controls player's rotation around their own axis, takes values in [0-360). 
-	 *  Pitch controls player's head tilt, takes values in [-90-90]  !NEGATIVE VALUES CORRESPOND TO AN UPWARD TILT!
+	 *  Pitch controls player's head tilt, takes values in [0-180]  !VALUES<90 CORRESPOND TO AN UPWARD TILT!
 	 * ARGUMENTS:
 	 * 	[1] Yaw (14 bits)
 	 * 	[4] Pitch (13 bits)
@@ -48,7 +48,7 @@ public class Package{
 	 * DESCRIPTION:
 	 * 	For controlling the Item hotBar.
 	 * ARGUMENTS:
-	 * 
+	 * 	
 	 * [LEFT_RIGHT_CLICK]
 	 *
 	 *[INVENTORY]

@@ -58,10 +58,7 @@ public class SerialMessageInterpreter {
 	}
 	
 	
-	private static void toogleLeftRightClick(BitArray[] arguments) throws Exception {
-		pc.leftClicking(arguments[0].bitAt(0));
-		pc.rightClicking(arguments[1].bitAt(0));
-	}
+
 
 
 	private static void sendResetCameraPackage() {
@@ -84,6 +81,11 @@ public class SerialMessageInterpreter {
 	public static void selectItem(BitArray hotBarClues) throws Exception {
 		if(hotBarClues.bitAt(0)) {pc.nextTool();return;}
 		pc.prevTool();
+	}
+	
+	private static void toogleLeftRightClick(BitArray[] arguments) throws Exception {
+		pc.leftClicking(arguments[0].bitAt(0));
+		pc.rightClicking(arguments[1].bitAt(0));
 	}
 	
 	
