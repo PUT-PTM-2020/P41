@@ -46,10 +46,9 @@ public class Package{
 	 * 
 	 *[HOT_BAR]
 	 * DESCRIPTION:
-	 * 	For controlling the Item hotBar.
+	 * 	For controlling the hotBar. Choosing net/previous items.
 	 * ARGUMENTS:
-	 * 	
-	 * [LEFT_RIGHT_CLICK]
+	 * [1] Next/Previous (1 bit)- if set to 1, choose next item, else choose previous.
 	 *
 	 *[INVENTORY]
 	 * DESCRIPTION:

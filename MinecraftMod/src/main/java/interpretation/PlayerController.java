@@ -11,6 +11,7 @@ public class PlayerController {
 	
 	private GameSettings gs = null;
 	private PlayerEntity player= null;
+	private boolean inventoryStatus=false;
 	
 	PlayerController() 
 	{ 
@@ -71,6 +72,14 @@ public class PlayerController {
 
 	 
 	 //CRAFTING
+		 public void toogleInventory() {
+
+			 inventoryStatus=!inventoryStatus;
+			 if(inventoryStatus) {openInventory(); return;}
+			 closeInventory();
+		 }
+		 public void openInventory() { player.inventory.openInventory(player); }
+		 public void closeInventory() { player.inventory.closeInventory(player); }
 	   
 	//GETTERS/SETTERS
 		public GameSettings getGs() { return gs;}
