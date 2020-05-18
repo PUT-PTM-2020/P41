@@ -19,7 +19,7 @@ import binaryCommunication.Package.OrderType;
 import binaryCommunication.Package.PackageType;
 import interpretation.SerialMessageInterpreter;
 import jssc.SerialPortException;
-
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
@@ -61,9 +61,9 @@ public class ModCommands {
 	                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Launching crafting EQ"));
 	                 			ctx.getSource().sendFeedback(baseText,false);
 	                 			
-	                 			CraftingGUI gui= new CraftingGUI();
-	                 			gui.displayGUI(true);
-								
+	                 			CraftingGUI gui= new CraftingGUI(true);
+	                 			Minecraft.getInstance().displayGuiScreen(gui);
+		
 			            	}
 			            	catch(Exception e) 
 	                 		{

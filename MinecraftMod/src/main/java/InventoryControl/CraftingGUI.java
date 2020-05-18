@@ -13,6 +13,7 @@ import interpretation.SerialMessageInterpreter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.recipebook.RecipeList;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ClientRecipeBook;
@@ -27,6 +28,8 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.item.crafting.RecipeItemHelper;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.ForgeRegistry;
 
 
 public class CraftingGUI extends Screen {
@@ -35,31 +38,39 @@ public class CraftingGUI extends Screen {
 	private List<IRecipe<?>> craftable;
 	private Map<RecipeBookCategories,List<IRecipe<?>>> craftableByCategory;
 	private ClientRecipeBook book;
-	private NonNullList<ItemStack> inventory;
-
+	private ArrayList<ItemStack> inventory;
+	private boolean launchedByCraftingTable=false;
 	
-	public CraftingGUI() {
+	public CraftingGUI(boolean launchedByCraftingTable) {
 		super(new StringTextComponent("crafting"));
 		this.setSize(this.cwidth, this.cheight);
 		book=Minecraft.getInstance().player.getRecipeBook();
 		craftable= new ArrayList<IRecipe<?>>();
 		craftableByCategory= new HashMap<RecipeBookCategories, List<IRecipe<?>>>();
+		this.launchedByCraftingTable=launchedByCraftingTable;
+		this.inventory= new ArrayList<ItemStack>();
 	}
 	
-	public void init(boolean launchedByCraftingTable) throws Exception {
+
+	public void tick() { super.tick();}
+	
+	public void init() {
+		super.init();
 		//update Craftable recipies
-		updateCraftableRecipies(launchedByCraftingTable);
+		try { updateCraftableRecipies(launchedByCraftingTable);} catch (Exception e) {e.printStackTrace();}
 		//get all recipies categories
 		updateCategories();
 		if(!craftableByCategory.isEmpty())
 		{
+			
+			int i=0;
 			//button for each category
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
-				SerialMessageInterpreter.sendToPlayer("\nDODAWANIE PRZYCISKU");
-				 this.addButton(new Button(this.cwidth / 2 - 155, this.cheight / 6 + 48 - 6, 150, 20, cat.name(), (p_213055_1_) -> {
-			         //this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat)));
+				 this.addButton(new Button(150, 20, this.cwidth/2, 100+i*40, cat.name(), (p_213055_1_) -> {
+			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat)));
 			      }));
 			}
+			
 		}
 	}
 	
@@ -87,16 +98,11 @@ public class CraftingGUI extends Screen {
 	
 	
 
-	public void displayGUI(boolean launchedByCraftingTable) throws Exception {
-		//get all categorieshout
-		init(launchedByCraftingTable);
-		//this.minecraft.displayGuiScreen(this);
-		this.render(10, 10, 10);
-	}
 	
 
 	private  void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
 		book=Minecraft.getInstance().player.getRecipeBook();
+
 		List<RecipeList> allRecipies=book.getRecipes();
 		SerialMessageInterpreter.sendToPlayer("WSZYSTKIE RECEPTURY W KSI¥¯CE "+allRecipies.size());
 		int craftingwidth=2;
@@ -106,6 +112,7 @@ public class CraftingGUI extends Screen {
 		
 		//helper method
 		this.inventory=getPlayerInventoryAsItemStacks();
+		
 		
 		for(RecipeList list:allRecipies) 
 		{
@@ -120,20 +127,27 @@ public class CraftingGUI extends Screen {
 					if(temp.canFit(craftingwidth, craftingheight)) {
 						//check if player has the neccesary ingredients
 						NonNullList<Ingredient> ingr=temp.getIngredients();
-						//flag variable, set as true by default
+
 						boolean canBeCrafted=false;
 						//as the same item can have multiple recipes they ought to be iterated over
+						//printInventory();
+						SerialMessageInterpreter.sendToPlayer("\nPróba zcraftowania " + temp.getRecipeOutput().toString());
 						for(int i=0;i<ingr.size();i++) 
 						{
 							//save current Stacks in temp array and iterate over it
 							ItemStack [] currentStacks=ingr.get(i).getMatchingStacks();
 							canBeCrafted=false;
-							SerialMessageInterpreter.sendToPlayer("\nCzêœæ receptury ["+i+"] Potrzebne sk³adniki: "+Arrays.toString(currentStacks));
+							
+							SerialMessageInterpreter.sendToPlayer("\n[" +i+"]-czêœæ receptury\nPotrzebne sk³adniki: "+Arrays.toString(currentStacks));
+							//in case the recipe requires an empty space 
+							
+							if(currentStacks.length==0) {canBeCrafted=true;}
 							 for(int j=0;j<currentStacks.length;j++) 
 							 {
 								 int itemIndex=hasItemStack(currentStacks[j]);
 								 if(itemIndex!=-1) 
 								 {
+									 SerialMessageInterpreter.sendToPlayer("\nTen sk³adnik mamy");
 									 canBeCrafted=true;
 									 decreaseStackByAmmount(itemIndex,currentStacks[j].getCount());
 									 break;
@@ -141,10 +155,14 @@ public class CraftingGUI extends Screen {
 							 }
 							 if(!canBeCrafted) {break;}
 						}
-						if(canBeCrafted) {craftable.add(temp);break;}
-					}
-					
-				}	
+						if(canBeCrafted) 
+						{
+							SerialMessageInterpreter.sendToPlayer("\nSUKCES! Mo¿na craftowaæ "+temp.getRecipeOutput().toString());
+							craftable.add(temp);break;
+						}
+					}	
+				}		
+				this.inventory=getPlayerInventoryAsItemStacks();
 				temp=it.next();
 			}
 				
@@ -155,12 +173,10 @@ public class CraftingGUI extends Screen {
 	
 
 
-	public void tick() {
-	      super.tick();
-	   }
-
 	   public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
+		  this.renderBackground();
 		  this.drawCenteredString(this.font, this.title.getFormattedText(), this.width / 2, 10, 16777215);
+
 	      super.render(p_render_1_, p_render_2_, p_render_3_);
 	   }
 	
@@ -195,16 +211,30 @@ public class CraftingGUI extends Screen {
 	     
 	   }
 	
-	 private NonNullList<ItemStack> getPlayerInventoryAsItemStacks() {
-		 NonNullList<ItemStack> temp= NonNullList.withSize(36, ItemStack.EMPTY);
-		 PlayerInventory pInv=Minecraft.getInstance().player.inventory;
+	private void printInventory(){
+		SerialMessageInterpreter.sendToPlayer("\nINVENTARZ ");
+		for(ItemStack item:inventory) {
+			SerialMessageInterpreter.sendToPlayer("\n "+item.getItem().toString());
+		}
+		
+	}
+	
+	 private ArrayList<ItemStack> getPlayerInventoryAsItemStacks() {
+		 this.inventory.clear();
+		 
+		 ArrayList<ItemStack> temp= new ArrayList<ItemStack>();
+		 PlayerInventory pInv= Minecraft.getInstance().player.inventory;
+		 
 		 for(int i=0;i<pInv.getSizeInventory();i++) {
 			 ItemStack curritem=pInv.getStackInSlot(i);
-			 if(curritem!=ItemStack.EMPTY) {temp.add(curritem);}
+			 if(!curritem.isEmpty()){ temp.add(curritem.copy());}
 		 }
 		return temp;
 	}
 	 
+	 
+
+	
 	private void decreaseStackByAmmount(int index,int ammount) {
 		ItemStack temp= this.inventory.get(index);
 		if(temp.getCount()>=ammount) {
@@ -213,10 +243,12 @@ public class CraftingGUI extends Screen {
 	}
 	 
 	public int hasItemStack(ItemStack itemStackIn) {
-		   for(int i=0;i<this.inventory.size();i++) {
-			   ItemStack itemstack = (ItemStack)inventory.get(i);
+		   for(int i=0;i<this.inventory.size();i++)
+		   {
+			   ItemStack itemstack = inventory.get(i);
 	            if (!itemstack.isEmpty() && itemstack.isItemEqual(itemStackIn) &&  itemstack.getCount()>=itemStackIn.getCount()) 
 	            {
+	            	//SerialMessageInterpreter.sendToPlayer("\nZnaleziono "+ itemStackIn.getItem().toString()+" w ekwipunku");
 	                return i;
 	            }
 		   }
