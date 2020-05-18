@@ -64,9 +64,6 @@ public class SerialMessageInterpreter {
 			case CAMERA_MOVEMENT:
 				moveCamera(pack.getArguments());
 				return;
-			case CAMERA_RESET:
-				sendResetCameraPackage();
-				return;
 			case HOT_BAR:
 				selectItem(pack.getArguments()[0]);
 				return;
@@ -78,13 +75,6 @@ public class SerialMessageInterpreter {
 		
 	}
 	
-	
-
-
-
-	private static void sendResetCameraPackage() {
-		// TODO Auto-generated method stub	
-	}
 
 
 	public static void movePlayer(BitArray movementClues) throws Exception
@@ -113,43 +103,7 @@ public class SerialMessageInterpreter {
 		
 	}
 	
-	private static void controlRecepies() throws Exception{
-		
-		Collection<IRecipe<?>> allrecipies=Minecraft.getInstance().world.getRecipeManager().getRecipes();
-		ArrayList<IRecipe<?>> recipies=new ArrayList<IRecipe<?>>();
-		Iterator<IRecipe<?>> it=allrecipies.iterator();
-		
-		ClientRecipeBook book=Minecraft.getInstance().player.getRecipeBook();
-		//sendToPlayer("\nILOSC PRZEPISÓW WSZYSTKICH: "+allrecipies.size());
-		//sendToPlayer("\nILOSC PRZEPISÓW U KLIENTA : "+book.getRecipes().size());
-		
-		//flag variable, set as true by default
-		boolean canBeCrafted=true;
-		IRecipe<?> temp=it.next();
-		while(it.hasNext()) {
-			//check if recepie has been unlocked by the player
-			if(book.isUnlocked(temp)){
-				//check if player has the neccesary ingredients
-				 NonNullList<Ingredient> ingr=temp.getIngredients();
-				 //as the same item can have multiple recepies they ought to be iterated over
-				 for(int i=0;i<ingr.size();i++) {
-					 ItemStack [] currentStacks=ingr.get(i).getMatchingStacks();
-					 //save current Stacks in temp array and iterate over it
-					 for(int j=0;j<currentStacks.length;j++) {
-						 if(!Minecraft.getInstance().player.inventory.hasItemStack(currentStacks[j])) {canBeCrafted=false;break;}  
-					 }
-					 //1 way of crafting the item is enough to make it 'craftable'
-					 if(canBeCrafted) {recipies.add(temp);break;}
-				 }	
-			}
-			temp=it.next();
-		}
-		
-		sendToPlayer("\nMOZNA ZCRAFTOWAC: "+Arrays.toString(recipies.toArray()));
-
 	
-		
-	}
 	
 	
 	

@@ -11,6 +11,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.serial.serialmod.Serial;
 import com.serial.serialmod.SerialInterface;
 
+import InventoryControl.CraftingGUI;
 import binaryCommunication.BinaryByte;
 import binaryCommunication.BitArray;
 import binaryCommunication.Package;
@@ -36,6 +37,7 @@ public class ModCommands {
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
 	            .then(registerSendB()) //sends a message as binary
 	            .then(registerEcho())
+	            .then(registerEQ())
 	            .then(registerDisconnect()) //disconnects from the currently connected port "/serial disconnect"
 	            .then(registerIsConnected()) //shows whether any ports are connected 
 	            .then(registerHelp()) //prints help
@@ -48,6 +50,29 @@ public class ModCommands {
 	    	dispatcher.register(Commands.literal("s").redirect(allComands));
 	    }	
 	    
+	    //Equipment test
+	    public static ArgumentBuilder<CommandSource, ?> registerEQ() {
+	    	 return Commands.literal("eq") 
+			            .executes(ctx -> {
+			            	try 
+			            	{
+			           
+			            		StringTextComponent baseText= new StringTextComponent("");
+	                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Launching crafting EQ"));
+	                 			ctx.getSource().sendFeedback(baseText,false);
+	                 			
+	                 			CraftingGUI gui= new CraftingGUI();
+	                 			gui.displayGUI(true);
+								
+			            	}
+			            	catch(Exception e) 
+	                 		{
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"LAUNCHING FAILED"),false);
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                 		}	
+			                return 1;
+			            });    
+	    }
 
 	    //CONNECT
 	    static ArgumentBuilder<CommandSource, ?> registerConnect()
