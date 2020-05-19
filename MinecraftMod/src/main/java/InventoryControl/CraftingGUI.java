@@ -2,7 +2,6 @@ package InventoryControl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -13,9 +12,7 @@ import interpretation.SerialMessageInterpreter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.recipebook.RecipeList;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ClientRecipeBook;
 import net.minecraft.client.util.RecipeBookCategories;
 import net.minecraft.entity.player.PlayerInventory;
@@ -25,16 +22,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.item.crafting.RecipeItemHelper;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
 
 
 public class CraftingGUI extends Screen {
-	private int cwidth=800;
-	private int cheight=800;
 	private List<IRecipe<?>> craftable;
 	private Map<RecipeBookCategories,List<IRecipe<?>>> craftableByCategory;
 	private ClientRecipeBook book;
@@ -43,7 +35,6 @@ public class CraftingGUI extends Screen {
 	
 	public CraftingGUI(boolean launchedByCraftingTable) {
 		super(new StringTextComponent("crafting"));
-		this.setSize(this.cwidth, this.cheight);
 		book=Minecraft.getInstance().player.getRecipeBook();
 		craftable= new ArrayList<IRecipe<?>>();
 		craftableByCategory= new HashMap<RecipeBookCategories, List<IRecipe<?>>>();
@@ -55,6 +46,10 @@ public class CraftingGUI extends Screen {
 	public void tick() { super.tick();}
 	
 	public void init() {
+		this.buttons.clear();
+		this.craftable.clear();
+		this.craftableByCategory.clear();
+		
 		super.init();
 		//update Craftable recipies
 		try { updateCraftableRecipies(launchedByCraftingTable);} catch (Exception e) {e.printStackTrace();}
@@ -63,14 +58,33 @@ public class CraftingGUI extends Screen {
 		if(!craftableByCategory.isEmpty())
 		{
 			
-			int i=0;
 			//button for each category
+			int i=1;
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
-				 this.addButton(new Button(150, 20, this.cwidth/2, 100+i*40, cat.name(), (p_213055_1_) -> {
-			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat)));
+				 this.addButton(new Button(this.width/2 - 100, this.height / 4 + (24*i) + -16, 200, 20,cat.name(), (p_213055_1_) -> {
+			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this));
 			      }));
+				 i++;
 			}
 			
+		}
+	}
+	
+	//for player to know which button is currently selected
+	public void focusButton(int buttonIndex) {
+		//defocus all the other buttons
+		for(int i=0;i<this.buttons.size();i++) 
+		{
+			this.buttons.get(i).changeFocus(false);
+		}
+		this.buttons.get(buttonIndex).changeFocus(true);
+		
+	}
+	
+	public void rightClickFocusedButton() {
+		for(int i=0;i<this.buttons.size();i++) 
+		{
+			if(this.buttons.get(i).isFocused()) {((Button) this.buttons.get(i)).onPress();}
 		}
 	}
 	
@@ -86,9 +100,9 @@ public class CraftingGUI extends Screen {
 				 //check for null pointer
 				 if(recipeList==null) { recipeList = Arrays.asList(rec);}
 				 else {	 
-					 recipeList = new ArrayList<>(recipeList);
+					 recipeList = new ArrayList<IRecipe<?>>(recipeList);
 					 recipeList.add(rec); 
-					 }	
+				 }	
 				 craftableByCategory.put(s,recipeList);
 			}
 			SerialMessageInterpreter.sendToPlayer("\nKATEGORYZOWANIE UDANE!\nRozbito na "+Arrays.toString(craftableByCategory.keySet().toArray()));
@@ -102,9 +116,8 @@ public class CraftingGUI extends Screen {
 
 	private  void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
 		book=Minecraft.getInstance().player.getRecipeBook();
-
 		List<RecipeList> allRecipies=book.getRecipes();
-		SerialMessageInterpreter.sendToPlayer("WSZYSTKIE RECEPTURY W KSI¥¯CE "+allRecipies.size());
+		SerialMessageInterpreter.sendToPlayer("WSZYSTKIE RECEPTURY W KSIÂ¥Â¯CE "+allRecipies.size());
 		int craftingwidth=2;
 		int craftingheight=2;
 		if(launchedByCraftingTable){craftingwidth=4;craftingheight=4;}
@@ -114,9 +127,9 @@ public class CraftingGUI extends Screen {
 		this.inventory=getPlayerInventoryAsItemStacks();
 		
 		
-		for(RecipeList list:allRecipies) 
+		for(RecipeList rlist:allRecipies) 
 		{
-			Iterator<IRecipe<?>> it=list.getRecipes().iterator();
+			Iterator<IRecipe<?>> it=rlist.getRecipes().iterator();
 			IRecipe<?> temp=it.next();
 		
 			while(it.hasNext()) 
@@ -131,14 +144,14 @@ public class CraftingGUI extends Screen {
 						boolean canBeCrafted=false;
 						//as the same item can have multiple recipes they ought to be iterated over
 						//printInventory();
-						SerialMessageInterpreter.sendToPlayer("\nPróba zcraftowania " + temp.getRecipeOutput().toString());
+						SerialMessageInterpreter.sendToPlayer("\nPrÃ³ba zcraftowania " + temp.getRecipeOutput().toString());
 						for(int i=0;i<ingr.size();i++) 
 						{
 							//save current Stacks in temp array and iterate over it
 							ItemStack [] currentStacks=ingr.get(i).getMatchingStacks();
 							canBeCrafted=false;
 							
-							SerialMessageInterpreter.sendToPlayer("\n[" +i+"]-czêœæ receptury\nPotrzebne sk³adniki: "+Arrays.toString(currentStacks));
+							SerialMessageInterpreter.sendToPlayer("\n[" +i+"]-czÃªÅ“Ã¦ receptury\nPotrzebne skÂ³adniki: "+Arrays.toString(currentStacks));
 							//in case the recipe requires an empty space 
 							
 							if(currentStacks.length==0) {canBeCrafted=true;}
@@ -147,7 +160,7 @@ public class CraftingGUI extends Screen {
 								 int itemIndex=hasItemStack(currentStacks[j]);
 								 if(itemIndex!=-1) 
 								 {
-									 SerialMessageInterpreter.sendToPlayer("\nTen sk³adnik mamy");
+									 SerialMessageInterpreter.sendToPlayer("\nTen skÂ³adnik mamy");
 									 canBeCrafted=true;
 									 decreaseStackByAmmount(itemIndex,currentStacks[j].getCount());
 									 break;
@@ -157,7 +170,7 @@ public class CraftingGUI extends Screen {
 						}
 						if(canBeCrafted) 
 						{
-							SerialMessageInterpreter.sendToPlayer("\nSUKCES! Mo¿na craftowaæ "+temp.getRecipeOutput().toString());
+							SerialMessageInterpreter.sendToPlayer("\nSUKCES! MoÂ¿na craftowaÃ¦ "+temp.getRecipeOutput().toString());
 							craftable.add(temp);break;
 						}
 					}	

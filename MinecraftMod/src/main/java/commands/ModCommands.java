@@ -61,8 +61,8 @@ public class ModCommands {
 	                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Launching crafting EQ"));
 	                 			ctx.getSource().sendFeedback(baseText,false);
 	                 			
-	                 			CraftingGUI gui= new CraftingGUI(true);
-	                 			Minecraft.getInstance().displayGuiScreen(gui);
+
+	                 			Minecraft.getInstance().displayGuiScreen(new CraftingGUI(true));
 		
 			            	}
 			            	catch(Exception e) 
