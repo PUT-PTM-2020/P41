@@ -1,5 +1,7 @@
 package InventoryControl;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,6 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import interpretation.SerialMessageInterpreter;
 import net.minecraft.client.Minecraft;
@@ -23,6 +27,7 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 
 
@@ -32,14 +37,16 @@ public class CraftingGUI extends Screen {
 	private ClientRecipeBook book;
 	private ArrayList<ItemStack> inventory;
 	private boolean launchedByCraftingTable=false;
+	private int currentlySelected;
 	
 	public CraftingGUI(boolean launchedByCraftingTable) {
-		super(new StringTextComponent("crafting"));
+		super(new StringTextComponent("CRAFTING CATEGORIES"));
 		book=Minecraft.getInstance().player.getRecipeBook();
 		craftable= new ArrayList<IRecipe<?>>();
 		craftableByCategory= new HashMap<RecipeBookCategories, List<IRecipe<?>>>();
 		this.launchedByCraftingTable=launchedByCraftingTable;
 		this.inventory= new ArrayList<ItemStack>();
+		this.currentlySelected=0;
 	}
 	
 
@@ -59,15 +66,29 @@ public class CraftingGUI extends Screen {
 		{
 			
 			//button for each category
-			int i=1;
+			int i=0;
+			int buttonWidth=(int) (0.3*this.width);
+			int buttonHeight=(int) (0.11*this.height);
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
-				 this.addButton(new Button(this.width/2 - 100, this.height / 4 + (24*i) + -16, 200, 20,cat.name(), (p_213055_1_) -> {
+				 this.addButton(new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat, (p_213055_1_) -> {
 			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this));
 			      }));
 				 i++;
 			}
 			
 		}
+	}
+	
+	
+	public void nextCategory() {
+		currentlySelected=(currentlySelected+1)%craftable.size();
+		focusButton(currentlySelected);
+	}
+	
+	public void previousCategory() {
+		currentlySelected--;
+		if(currentlySelected<0) {currentlySelected=craftable.size()-1;}
+		focusButton(currentlySelected);
 	}
 	
 	//for player to know which button is currently selected
@@ -77,8 +98,7 @@ public class CraftingGUI extends Screen {
 		{
 			this.buttons.get(i).changeFocus(false);
 		}
-		this.buttons.get(buttonIndex).changeFocus(true);
-		
+		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
 	}
 	
 	public void rightClickFocusedButton() {
@@ -109,58 +129,48 @@ public class CraftingGUI extends Screen {
 		}
 		
 	}
-	
-	
 
 	
-
 	private  void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
-		book=Minecraft.getInstance().player.getRecipeBook();
-		List<RecipeList> allRecipies=book.getRecipes();
-		SerialMessageInterpreter.sendToPlayer("WSZYSTKIE RECEPTURY W KSI¥¯CE "+allRecipies.size());
-		int craftingwidth=2;
-		int craftingheight=2;
+		book=Minecraft.getInstance().player.getRecipeBook(); //gets all available recipes
+		List<RecipeList> allRecipies= book.getRecipes();
+		
+		//for distinguishing between crafting in inventory or in a crafting table
+		int craftingwidth=2; int craftingheight=2;
 		if(launchedByCraftingTable){craftingwidth=4;craftingheight=4;}
 		
 		
-		//helper method
 		this.inventory=getPlayerInventoryAsItemStacks();
-		
-		
+		//iterate over all available recipes
 		for(RecipeList rlist:allRecipies) 
 		{
 			Iterator<IRecipe<?>> it=rlist.getRecipes().iterator();
 			IRecipe<?> temp=it.next();
-		
 			while(it.hasNext()) 
 			{
 				//check if recipe has been unlocked by the player
 				if(book.isUnlocked(temp))
 				{
 					if(temp.canFit(craftingwidth, craftingheight)) {
-						//check if player has the neccesary ingredients
+					//check if player has the neccesary ingredients
 						NonNullList<Ingredient> ingr=temp.getIngredients();
 
 						boolean canBeCrafted=false;
 						//as the same item can have multiple recipes they ought to be iterated over
-						//printInventory();
-						SerialMessageInterpreter.sendToPlayer("\nPróba zcraftowania " + temp.getRecipeOutput().toString());
 						for(int i=0;i<ingr.size();i++) 
 						{
 							//save current Stacks in temp array and iterate over it
 							ItemStack [] currentStacks=ingr.get(i).getMatchingStacks();
 							canBeCrafted=false;
-							
-							SerialMessageInterpreter.sendToPlayer("\n[" +i+"]-czêœæ receptury\nPotrzebne sk³adniki: "+Arrays.toString(currentStacks));
+
 							//in case the recipe requires an empty space 
-							
 							if(currentStacks.length==0) {canBeCrafted=true;}
 							 for(int j=0;j<currentStacks.length;j++) 
 							 {
 								 int itemIndex=hasItemStack(currentStacks[j]);
 								 if(itemIndex!=-1) 
 								 {
-									 SerialMessageInterpreter.sendToPlayer("\nTen sk³adnik mamy");
+									
 									 canBeCrafted=true;
 									 decreaseStackByAmmount(itemIndex,currentStacks[j].getCount());
 									 break;
@@ -168,11 +178,7 @@ public class CraftingGUI extends Screen {
 							 }
 							 if(!canBeCrafted) {break;}
 						}
-						if(canBeCrafted) 
-						{
-							SerialMessageInterpreter.sendToPlayer("\nSUKCES! Mo¿na craftowaæ "+temp.getRecipeOutput().toString());
-							craftable.add(temp);break;
-						}
+						if(canBeCrafted) {	craftable.add(temp);break;}
 					}	
 				}		
 				this.inventory=getPlayerInventoryAsItemStacks();
@@ -180,16 +186,21 @@ public class CraftingGUI extends Screen {
 			}
 				
 		}
-			SerialMessageInterpreter.sendToPlayer("\nMOZNA ZCRAFTOWAC [ilosc]: "+craftable.size());
-			SerialMessageInterpreter.sendToPlayer("\nJEST TO "+Arrays.toString(craftable.toArray()));
-		}
+	}
 	
 
 
 	   public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
 		  this.renderBackground();
-		  this.drawCenteredString(this.font, this.title.getFormattedText(), this.width / 2, 10, 16777215);
+		  
+		  Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation( "serial","craftingguibg.png"));
 
+		  RenderSystem.pushMatrix();
+		  float scaleFactor=1.6f;
+		  RenderSystem.scalef(scaleFactor,scaleFactor, 1.0f);
+		  this.drawCenteredString(this.font, this.title.getFormattedText(), (int) ((this.width/2)/scaleFactor), (int) ((this.height*0.1)/scaleFactor), 16777215);
+		  RenderSystem.popMatrix();
+		  
 	      super.render(p_render_1_, p_render_2_, p_render_3_);
 	   }
 	
@@ -268,6 +279,34 @@ public class CraftingGUI extends Screen {
 	           
 	      return -1;
 	   }
+	
+	//source https://stackoverflow.com/questions/869033/how-do-i-copy-an-object-in-java
+	private static Object cloneObject(Object obj){
+        try{
+            Object clone = obj.getClass().newInstance();
+            for (Field field : obj.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                if(field.get(obj) == null || Modifier.isFinal(field.getModifiers())){
+                    continue;
+                }
+                if(field.getType().isPrimitive() || field.getType().equals(String.class)
+                        || field.getType().getSuperclass().equals(Number.class)
+                        || field.getType().equals(Boolean.class)){
+                    field.set(clone, field.get(obj));
+                }else{
+                    Object childObj = field.get(obj);
+                    if(childObj == obj){
+                        field.set(clone, clone);
+                    }else{
+                        field.set(clone, cloneObject(field.get(obj)));
+                    }
+                }
+            }
+            return clone;
+        }catch(Exception e){
+            return null;
+        }
+    }
 
 
 

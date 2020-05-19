@@ -1,16 +1,14 @@
 package InventoryControl;
 
-import java.util.Arrays;
+
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
-import interpretation.SerialMessageInterpreter;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -24,10 +22,10 @@ public class CraftingCategoryGUI extends Screen{
 	private List<IRecipe<?>> craftable;
 	//back button handling
 	private final Screen lastScreen;
-	//scroll handling
-	private boolean isScrollPressed = false;
-	private static final int scrollMax = 93;
-	private int scrollPos; //up to 93
+	
+	//view handling
+	private int currentItem;
+	//private Widget Icon;
 	//scroll texture
 	public static final ResourceLocation GUI = new ResourceLocation("textures/gui/book.png");
 	//itemTextures
@@ -38,7 +36,7 @@ public class CraftingCategoryGUI extends Screen{
 		this.category=category;
 		this.craftable=craftable;
 		this.lastScreen=lastScreen;
-		scrollPos=0;
+		currentItem=0;
 	}
 	
 	
@@ -69,7 +67,6 @@ public class CraftingCategoryGUI extends Screen{
 		ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 		
 		//delete the ingredients from player's inventory
-		
 		NonNullList<Ingredient> ingredients=recipe.getIngredients();
 
 		for(Ingredient ing:ingredients) 
@@ -93,8 +90,8 @@ public class CraftingCategoryGUI extends Screen{
 		
 		}
 			
-		//so that the client sees it imediately
-				Minecraft.getInstance().player.inventory.addItemStackToInventory(recipe.getRecipeOutput());
+		//add it on client side, so that the client sees it immediately
+		Minecraft.getInstance().player.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		//add crafted item
 		splayer.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		
@@ -102,42 +99,17 @@ public class CraftingCategoryGUI extends Screen{
 	
 	public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
 		  this.renderBackground();
-		  //displace everything vertically by offset
-		  p_render_2_=p_render_2_+getOffset();
-		  
-		  
 		  this.drawCenteredString(this.font, this.title.getFormattedText(), this.width / 2, 10, 16777215);
+		  //render ICON
 		  
-		  this.renderScroll(p_render_2_);
 		  
-		  //draw only buttons in view (with offset)
-	      for(int i = 0; i < this.buttons.size(); ++i) {
-	          this.buttons.get(i).render(p_render_1_, p_render_2_, p_render_3_);
-	       }
+		  //render crafting recipe
+		  
+		  //draw buttons
+		  super.render(p_render_1_,p_render_2_,p_render_3_);
 	 }
 	
-	private void renderScroll(int mouseY) {
-		if (isScrollPressed) {
-			scrollPos = mouseY - 7 - (height / 2 - 49);
-			handleScrollPos();
-		}
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		Minecraft.getInstance().getTextureManager().bindTexture(GUI);
-		
-	}
 	
-	
-	private void handleScrollPos(){
-		if(scrollPos < 0) { scrollPos = 0;}
-		scrollPos=scrollPos%scrollMax;
-	}
-	
-	private int getOffset(){
-		int offset = Math.round((scrollPos * (craftable.size() - 5)) / scrollMax);
-		if(offset < 0)
-			return  0;
-		return offset;
-	}
 	
 	
 }
