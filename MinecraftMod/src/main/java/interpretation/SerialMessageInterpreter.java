@@ -105,12 +105,7 @@ public class SerialMessageInterpreter {
 		pc.rightClicking(arguments[1].bitAt(0));
 	}
 	
-	private static void launchCraftingGui() throws Exception{
 		
-	}
-	
-	
-	
 	
 	
 	public static void moveCamera(BitArray[] arguments) throws Exception{

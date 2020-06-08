@@ -79,16 +79,20 @@ public class CraftingCategoryGUI extends Screen{
 		int i=1;
 		for(IRecipe<?> recipe:craftable) {
 				 this.addButton(new Button(this.width/2 - 100, this.height / 4 + (24*i) + -16, 200, 20, recipe.getRecipeOutput().getItem().toString(), (p_213055_1_) -> {
-			         craftItem(recipe);
+			         try {
+						craftItem(recipe);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 			      }));
 				 i++;
 			}
-		this.focusButton(0);
 			
 	}
 	
 	//when a recipe is chosen
-	private void craftItem(IRecipe<?> recipe) {
+	private void craftItem(IRecipe<?> recipe) throws Exception {
 		ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 		
 		//delete the ingredients from player's inventory
@@ -118,6 +122,9 @@ public class CraftingCategoryGUI extends Screen{
 		//add crafted item
 		splayer.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		
+		//update recepies
+		((CraftingGUI) lastScreen).updateCraftableRecipies(false);
+		((CraftingGUI) lastScreen).updateCategories();
 	}
 	
 	public void render(int p_render_1_, int p_render_2_, float p_render_3_) {

@@ -93,11 +93,7 @@ public class CraftingGUI extends Screen {
 	
 	//for player to know which button is currently selected
 	public void focusButton(int buttonIndex) {
-		//defocus all the other buttons
-		for(int i=0;i<this.buttons.size();i++) 
-		{
-			this.buttons.get(i).changeFocus(false);
-		}
+	
 		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
 	}
 	
@@ -130,7 +126,7 @@ public class CraftingGUI extends Screen {
 	}
 
 	
-	private  void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
+	public void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
 		book=Minecraft.getInstance().player.getRecipeBook(); //gets all available recipes
 		List<RecipeList> allRecipies= book.getRecipes();
 		
@@ -155,13 +151,14 @@ public class CraftingGUI extends Screen {
 						NonNullList<Ingredient> ingr=temp.getIngredients();
 
 						boolean canBeCrafted=false;
+						boolean isAir=true;
 						//as the same item can have multiple recipes they ought to be iterated over
 						for(int i=0;i<ingr.size();i++) 
 						{
 							//save current Stacks in temp array and iterate over it
 							ItemStack [] currentStacks=ingr.get(i).getMatchingStacks();
 							canBeCrafted=false;
-
+							
 							//in case the recipe requires an empty space 
 							if(currentStacks.length==0) {canBeCrafted=true;}
 							 for(int j=0;j<currentStacks.length;j++) 
@@ -170,6 +167,7 @@ public class CraftingGUI extends Screen {
 								 int itemIndex=hasItemStack(currentStacks[j]);
 								 if(itemIndex!=-1) 
 								 {		
+									 isAir=false;
 									 canBeCrafted=true;
 									 //decrease the ammount of the item 'used up' in this step of the recipe
 									 decreaseStackByAmmount(itemIndex,currentStacks[j].getCount());
@@ -178,7 +176,7 @@ public class CraftingGUI extends Screen {
 							 }
 							 if(!canBeCrafted) {break;}
 						}
-						if(canBeCrafted) {	craftable.add(temp);break;}
+						if(canBeCrafted && !isAir) {	craftable.add(temp);break;}
 					}	
 				}		
 				this.inventory=getPlayerInventoryAsItemStacks();
