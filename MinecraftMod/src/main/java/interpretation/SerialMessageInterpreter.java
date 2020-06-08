@@ -59,6 +59,7 @@ public class SerialMessageInterpreter {
 		//BINARY PACKAGES
 		switch(pack.getOrderType()) {
 			case PLAYER_MOVEMENT:
+				if(pc.getInventoryStatus()) {navigateInventory(pack.getArguments()[0]);}
 				movePlayer(pack.getArguments()[0]); 
 				return;
 			case CAMERA_MOVEMENT:
@@ -70,12 +71,17 @@ public class SerialMessageInterpreter {
 			case LEFT_RIGHT_CLICK:
 				toogleLeftRightClick(pack.getArguments());
 				return;
+			case INVENTORY:
+				pc.setInventoryStatus(pack.getArguments()[0].bitAt(0));
+				return;
 			default: return;
 		}
 		
 	}
 	
-
+	public static void navigateInventory(BitArray navigationClues) throws Exception {
+		pc.gesture(navigationClues.bitAt(0));
+	}
 
 	public static void movePlayer(BitArray movementClues) throws Exception
 	{

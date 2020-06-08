@@ -60,10 +60,11 @@ public class Package{
 	//HELPER FIELDS
 		public static enum PackageType {NOTDETERMINED,ASCII,BINARY};
 		public static enum OrderType {NOTDETERMINED,PLAYER_MOVEMENT,CAMERA_MOVEMENT,CAMERA_RESET,LEFT_RIGHT_CLICK,HOT_BAR,INVENTORY};
-		private static String[] PLAYER_MOVEMENT_ARGUMENTS ={"Forward","Backwards","Left","Right","Jump","Crouch","Sprint"};
+		private static String[] PLAYER_MOVEMENT_ARGUMENTS ={	};
 		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw","Pitch"};
 		private static String[] HOT_BAR_ARGUMENTS ={"Next/Previous"};
 		private static String[] LEFT_RIGHT_CLICK_ARGUMENTS ={"Left","Right"};
+		private static String[] INVENTORY_ARGUMENTS ={"GesutreUp","GesutreDown"};
 		
 		private static int PACKAGE_TYPE_LENGHT=1;
 		private static int ORDER_TYPE_LENGHT=4;
@@ -72,6 +73,7 @@ public class Package{
 		private static int PITCH_LENGHT=13;
 		private static int HOT_BAR_ARGUMENT_LENGHT=1;
 		private static int LEFT_RIGHT_CLICK_ARGUMENT_LENGHT=1;
+		private static int INVENTORY_ARGUMENT_LENGHT=1;
 	
 	
 	
@@ -116,10 +118,9 @@ public class Package{
 			switch(typeAsInt) {
 				case 1:this.orderType= OrderType.PLAYER_MOVEMENT; break;
 				case 2:this.orderType= OrderType.CAMERA_MOVEMENT; break;
-				case 3: this.orderType = OrderType.CAMERA_RESET; break;
-				case 4: this.orderType = OrderType.LEFT_RIGHT_CLICK; break;
-				case 5:this.orderType= OrderType.HOT_BAR; break;
-				case 6:this.orderType= OrderType.INVENTORY; break;
+				case 3: this.orderType = OrderType.LEFT_RIGHT_CLICK; break;
+				case 4:this.orderType= OrderType.HOT_BAR; break;
+				case 5:this.orderType= OrderType.INVENTORY; break;
 				default:this.orderType= OrderType.NOTDETERMINED; break;
 				}
 			
@@ -176,6 +177,13 @@ public class Package{
 				return;
 			}
 			
+			if(this.orderType==OrderType.INVENTORY) {
+				this.arguments= new BitArray[1];
+				//uses one special argument as its only argument
+				this.arguments[0]= new BitArray(rawData).subBitArray(PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT,PACKAGE_TYPE_LENGHT+ORDER_TYPE_LENGHT+INVENTORY_ARGUMENT_LENGHT-1);
+				return;
+			}
+			
 		}
 
 	//PARSING RAW DATA FROM PACKAGE	
@@ -222,10 +230,9 @@ public class Package{
 			switch(this.orderType) {
 				case PLAYER_MOVEMENT: return BitArray.bitArrayFromInt(1,ORDER_TYPE_LENGHT);
 				case CAMERA_MOVEMENT: return BitArray.bitArrayFromInt(2,ORDER_TYPE_LENGHT);
-				case CAMERA_RESET: return BitArray.bitArrayFromInt(3,ORDER_TYPE_LENGHT);
-				case LEFT_RIGHT_CLICK: return BitArray.bitArrayFromInt(4,ORDER_TYPE_LENGHT);
-				case HOT_BAR: return BitArray.bitArrayFromInt(5,ORDER_TYPE_LENGHT);
-				case INVENTORY: return BitArray.bitArrayFromInt(6,ORDER_TYPE_LENGHT);
+				case LEFT_RIGHT_CLICK: return BitArray.bitArrayFromInt(3,ORDER_TYPE_LENGHT);
+				case HOT_BAR: return BitArray.bitArrayFromInt(4,ORDER_TYPE_LENGHT);
+				case INVENTORY: return BitArray.bitArrayFromInt(5,ORDER_TYPE_LENGHT);
 				default: return BitArray.bitArrayFromInt(0,ORDER_TYPE_LENGHT);
 			}
 		}

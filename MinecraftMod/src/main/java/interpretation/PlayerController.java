@@ -1,5 +1,6 @@
 package interpretation;
 
+import InventoryControl.CraftingGUI;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
@@ -12,6 +13,7 @@ public class PlayerController {
 	private GameSettings gs = null;
 	private PlayerEntity player= null;
 	private boolean inventoryStatus=false;
+	private CraftingGUI GUI=new CraftingGUI(false);
 	
 	PlayerController() 
 	{ 
@@ -78,13 +80,26 @@ public class PlayerController {
 			 if(inventoryStatus) {openInventory(); return;}
 			 closeInventory();
 		 }
-		 public void openInventory() { player.inventory.openInventory(player); }
-		 public void closeInventory() { player.inventory.closeInventory(player); }
+		 public void setOpenTo(boolean status) {if(this.inventoryStatus) {this.openInventory();}else{this.closeInventory();}}
+		 public void openInventory() { Minecraft.getInstance().displayGuiScreen(GUI); }
+		 public void closeInventory() {GUI.onClose(); }
+		 
+		 public void gesture(boolean gesture) {
+			 //clockwise motion (right,down)
+			 if(gesture) {
+				 GUI.nextCategory();
+				 return; 
+			 }
+			 //counterclockwise motion (left,down)
+			 GUI.previousCategory();
+		 }
 	   
 	//GETTERS/SETTERS
 		public GameSettings getGs() { return gs;}
 		public PlayerEntity getPlayer() { return player;}
 		public void setPlayer(ClientPlayerEntity player) { this.player = player;}
 		public void setGs(GameSettings gs) { this.gs = gs;}
-
+		public void setInventoryStatus(boolean status) {this.inventoryStatus=status; this.setOpenTo(status);}
+		public boolean getInventoryStatus() {return this.inventoryStatus;}
+		
 }
