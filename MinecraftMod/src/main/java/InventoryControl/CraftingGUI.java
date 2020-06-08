@@ -64,7 +64,6 @@ public class CraftingGUI extends Screen {
 		updateCategories();
 		if(!craftableByCategory.isEmpty())
 		{
-			
 			//button for each category
 			int i=0;
 			int buttonWidth=(int) (0.3*this.width);
@@ -75,6 +74,7 @@ public class CraftingGUI extends Screen {
 			      }));
 				 i++;
 			}
+			this.focusButton(0);
 			
 		}
 	}
@@ -111,9 +111,9 @@ public class CraftingGUI extends Screen {
 	public void updateCategories() {
 		if(craftable!=null) 
 		{
+			//iterate over all craftable recipes
 			for(IRecipe<?> rec:craftable) 
 			{
-	
 				 RecipeBookCategories s = getCategory(rec);
 				 //get currently stored list
 				 List<IRecipe<?>> recipeList = craftableByCategory.get(s);
@@ -125,7 +125,6 @@ public class CraftingGUI extends Screen {
 				 }	
 				 craftableByCategory.put(s,recipeList);
 			}
-			SerialMessageInterpreter.sendToPlayer("\nKATEGORYZOWANIE UDANE!\nRozbito na "+Arrays.toString(craftableByCategory.keySet().toArray()));
 		}
 		
 	}
@@ -167,11 +166,12 @@ public class CraftingGUI extends Screen {
 							if(currentStacks.length==0) {canBeCrafted=true;}
 							 for(int j=0;j<currentStacks.length;j++) 
 							 {
+								 //method return -1 if player doesn't have the item, else return slot's index
 								 int itemIndex=hasItemStack(currentStacks[j]);
 								 if(itemIndex!=-1) 
-								 {
-									
+								 {		
 									 canBeCrafted=true;
+									 //decrease the ammount of the item 'used up' in this step of the recipe
 									 decreaseStackByAmmount(itemIndex,currentStacks[j].getCount());
 									 break;
 								}  

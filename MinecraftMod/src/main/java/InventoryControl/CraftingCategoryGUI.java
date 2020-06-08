@@ -42,6 +42,30 @@ public class CraftingCategoryGUI extends Screen{
 	
 	public void tick() { super.tick();}
 	
+	public void nextCategory() {
+		currentItem=(currentItem+1)%craftable.size();
+		focusButton(currentItem);
+	}
+	
+	public void previousCategory() {
+		currentItem--;
+		if(currentItem<0) {currentItem=craftable.size()-1;}
+		focusButton(currentItem);
+	}
+	
+	//for player to know which button is currently selected
+	public void focusButton(int buttonIndex) {
+
+		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
+	}
+	
+	public void rightClickFocusedButton() {
+		for(int i=0;i<this.buttons.size();i++) 
+		{
+			if(this.buttons.get(i).isFocused()) {((Button) this.buttons.get(i)).onPress();}
+		}
+	}
+	
 	public void init() {
 		super.init();
 		
@@ -59,6 +83,7 @@ public class CraftingCategoryGUI extends Screen{
 			      }));
 				 i++;
 			}
+		this.focusButton(0);
 			
 	}
 	
@@ -90,8 +115,6 @@ public class CraftingCategoryGUI extends Screen{
 		
 		}
 			
-		//add it on client side, so that the client sees it immediately
-		Minecraft.getInstance().player.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		//add crafted item
 		splayer.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		
