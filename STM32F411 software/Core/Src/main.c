@@ -41,24 +41,19 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
-
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 
-uint8_t sendUART[50];
-uint16_t sizeSendUART=0;
 uint8_t receiveUART[1];
-uint16_t sizeReceiveUART = 1;
+uint16_t sizeReceiveUART = 2;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
@@ -67,20 +62,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
  if(huart->Instance == USART2)//PC Connection
  {
-	 if(receiveUART[0] == 'A')
-	 {
-		 HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_15);
-	 }
-
+	 HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_12);
 	 HAL_UART_Transmit_IT(&huart6, receiveUART, sizeReceiveUART);
 	 HAL_UART_Receive_IT(&huart2, &receiveUART, sizeReceiveUART);
  }
  if(huart->Instance == USART6)//Bluetooth
  {
 	 HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_14);
-
 	 HAL_UART_Transmit_IT(&huart2, receiveUART, sizeReceiveUART);
-
 	 HAL_UART_Receive_IT(&huart6, &receiveUART, sizeReceiveUART);
  }
 }
@@ -119,32 +108,20 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_I2C1_Init();
   MX_USART6_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_UART_Receive_IT(&huart6, receiveUART, sizeReceiveUART);
   HAL_UART_Receive_IT(&huart2, receiveUART, sizeReceiveUART);
-
+  HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_15);
+  HAL_GPIO_TogglePin(GPIOD,GPIO_PIN_13);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  sizeSendUART = sprintf(sendUART, "Liczba wyslanych wiadomosci: %d.", 1);
   while (1)
   {
-	  if(HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0) == GPIO_PIN_SET)
-	  {
-		  //HAL_UART_Transmit_IT(&huart6, sendUART, sizeSendUART);
-		  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_12,GPIO_PIN_SET);
-		  HAL_UART_Transmit_IT(&huart6, sendUART, sizeSendUART);
-		  HAL_Delay(100);
-	  }
-	  else
-	  {
-		  HAL_GPIO_WritePin(GPIOD,GPIO_PIN_12,GPIO_PIN_RESET);
-	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -195,40 +172,6 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_I2C1_Init(void)
-{
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -244,7 +187,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 38400;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -277,7 +220,7 @@ static void MX_USART6_UART_Init(void)
 
   /* USER CODE END USART6_Init 1 */
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 9600;
+  huart6.Init.BaudRate = 38400;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -352,6 +295,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB6 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 

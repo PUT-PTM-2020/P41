@@ -6,3 +6,8 @@ Devices connected to STM32F411
 
 - connected STM with peripherials
 - STM32F411 transfer messages from USB to BT module, and in the opposite direction
+
+09.06.2020 (final)
+
+- code cleaning
+- added blinking diode feathure, while receiving messages
