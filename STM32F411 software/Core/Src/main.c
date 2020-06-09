@@ -47,7 +47,7 @@ UART_HandleTypeDef huart6;
 /* USER CODE BEGIN PV */
 
 uint8_t receiveUART[1];
-uint16_t sizeReceiveUART = 2;
+uint16_t sizeReceiveUART = 4;
 
 /* USER CODE END PV */
 
