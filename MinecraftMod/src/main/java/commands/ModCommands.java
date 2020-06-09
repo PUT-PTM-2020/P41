@@ -1,6 +1,8 @@
 package commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -9,10 +11,15 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import com.serial.serialmod.Serial;
 import com.serial.serialmod.SerialInterface;
 
+import InventoryControl.CraftingGUI;
 import binaryCommunication.BinaryByte;
+import binaryCommunication.BitArray;
+import binaryCommunication.Package;
+import binaryCommunication.Package.OrderType;
+import binaryCommunication.Package.PackageType;
 import interpretation.SerialMessageInterpreter;
 import jssc.SerialPortException;
-
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.util.text.StringTextComponent;
@@ -24,15 +31,15 @@ public class ModCommands {
 	    	allComands=
 	    			//all commands must begin with /serial <command>
 	    	dispatcher.register(Commands.literal("serial") 
-	    			//the instructions are added in seperate functions
+	    			//the instructions are added in separate functions
 	            .then(registerConnect()) //for example "/serial connect COM12"
 	            .then(registerPortList())//prints all ports for example "/serial ports"
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
 	            .then(registerSendB()) //sends a message as binary
-	            .then(registerEchoB()) //sends a message as binary
+	            .then(registerEcho())
+	            .then(registerEQ())
 	            .then(registerDisconnect()) //disconnects from the currently connected port "/serial disconnect"
 	            .then(registerIsConnected()) //shows whether any ports are connected 
-	            .then(registerEcho()) //acts as if written message was received
 	            .then(registerHelp()) //prints help
 	            .executes(ctx -> {
 	            	printHelp(ctx); 
@@ -43,6 +50,29 @@ public class ModCommands {
 	    	dispatcher.register(Commands.literal("s").redirect(allComands));
 	    }	
 	    
+	    //Equipment test
+	    public static ArgumentBuilder<CommandSource, ?> registerEQ() {
+	    	 return Commands.literal("eq") 
+			            .executes(ctx -> {
+			            	try 
+			            	{
+			           
+			            		StringTextComponent baseText= new StringTextComponent("");
+	                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Launching crafting EQ"));
+	                 			ctx.getSource().sendFeedback(baseText,false);
+	                 			
+
+	                 			Minecraft.getInstance().displayGuiScreen(new CraftingGUI(true));
+		
+			            	}
+			            	catch(Exception e) 
+	                 		{
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"LAUNCHING FAILED"),false);
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                 		}	
+			                return 1;
+			            });    
+	    }
 
 	    //CONNECT
 	    static ArgumentBuilder<CommandSource, ?> registerConnect()
@@ -117,42 +147,54 @@ public class ModCommands {
 			            });    
 	    }
 	    
-	    //REPEAT
 	    public static ArgumentBuilder<CommandSource, ?> registerEcho() {
 	        return Commands.literal("echo") 
-		            .then(Commands.argument("toBeSent", StringArgumentType.string())
-			                .executes(ctx -> { 			                	
-			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
-			                	try
-			                	{
-			                		SerialInterface.repeat(toBeSent);
-			                		StringTextComponent baseText= new StringTextComponent("");
-		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Echo data: "));
-		                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
-		                 			
-		                 			baseText.appendSibling(new StringTextComponent("\n\n\u00A7f"+"Char  Binary     ASCII "));
-		                 			byte[]  by = toBeSent.getBytes();
-									for(int j=0;j<by.length;j++) {
-										baseText.appendSibling(new StringTextComponent("\n \u00A73"+toBeSent.charAt(j)));
-										baseText.appendSibling(new StringTextComponent("     \u00A7f"+BinaryByte.getBinary(by[j])));
-										baseText.appendSibling(new StringTextComponent("   \u00A7e("+by[j]+")"));
-									}
-		                 			ctx.getSource().sendFeedback(baseText,false);
-			                	}
-			                	catch (SerialPortException e) 
-			                	{ 
-			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
-			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.getExceptionType()),false);
-			                	}
-			                	return 1;
-			                    }))
+		            .then(echoASCII())
+		            .then(echoB())
+		            .then(echoP())
 		            .executes(ctx -> {
 		            	//help
 		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
 		                return 1;
 		            });
 	    	
-		}  	    
+		}  	 
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> echoASCII() {
+	        return Commands.literal("ASCII")
+	        		 .then(Commands.argument("toBeSent", StringArgumentType.string())
+				                .executes(ctx -> { 			                	
+				                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+				                	try
+				                	{
+				                		SerialInterface.repeat(toBeSent);
+				                		StringTextComponent baseText= new StringTextComponent("");
+			                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Echo data: "));
+			                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
+			                 			
+			                 			baseText.appendSibling(new StringTextComponent("\n\n\u00A7f"+"Char  Binary     ASCII "));
+			                 			byte[]  by = toBeSent.getBytes();
+										for(int j=0;j<by.length;j++) {
+											baseText.appendSibling(new StringTextComponent("\n \u00A73"+toBeSent.charAt(j)));
+											baseText.appendSibling(new StringTextComponent("     \u00A7f"+BinaryByte.getBinary(by[j])));
+											baseText.appendSibling(new StringTextComponent("   \u00A7e("+by[j]+")"));
+										}
+			                 			ctx.getSource().sendFeedback(baseText,false);
+				                	}
+				                	catch (SerialPortException e) 
+				                	{ 
+				                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the message"),false);
+				                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.getExceptionType()),false);
+				                	}
+				                	return 1;
+				                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		} 
 	    
        	
 	    
@@ -192,8 +234,8 @@ public class ModCommands {
 		} 
 	    
 	    
-	    public static ArgumentBuilder<CommandSource, ?> registerEchoB() {
-	        return Commands.literal("echoB")
+	    public static ArgumentBuilder<CommandSource, ?> echoB() {
+	        return Commands.literal("Binary")
 		            	.then(Commands.argument("toBeSent", StringArgumentType.string())
 			                .executes(ctx -> { 			                	
 			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
@@ -224,7 +266,262 @@ public class ModCommands {
 		                return 1;
 		            });	
 		} 
+	    
+	    public static ArgumentBuilder<CommandSource, ?> echoP() {
+	        return Commands.literal("Package")
+		            	.then(Commands.literal("ASCII")
+		            			.then(Commands.argument("toBeSent", StringArgumentType.string())
+		    			                .executes(ctx -> { 			                	
+		    			                	String toBeSent = StringArgumentType.getString(ctx, "toBeSent");
+		    			                	try
+		    			                	{
+		    			                		byte[]  by = toBeSent.getBytes();
+		    			                		BitArray[] data= new BitArray[by.length];
+		    			                		for(int i=0;i<by.length;i++) {
+		    			                			data[i]= new BitArray(by[i]);
+		    			                		}
+		    			                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.ASCII,OrderType.NOTDETERMINED,data));
+		    			                		
+		    			                		
+		    			                		StringTextComponent baseText= new StringTextComponent("");
+		    		                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent data: "));
+		    		                 			baseText.appendSibling(new StringTextComponent("\u00A7e"+toBeSent));
+		    		                 			
+		    		   
+		    		                 			ctx.getSource().sendFeedback(baseText,false);
+		    			                	}
+		    			                	catch (Exception e) 
+		    			                	{ 
+		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the package"),false);
+		    			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+		    			                	}
+		    			                	return 1;
+		    			                    }))
+			                .executes(ctx -> { 			                	
+			                	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_ASCII_HELP"),false);
+			                	return 1;
+			                    }))
+		            	.then(Commands.literal("BINARY")
+		            			.then(playerMovement())
+		            			.then(cameraMovement())
+		            			.then(leftRightClick())
+		            			.then(hotBar())
+		            			.then(inventory())
+			                .executes(ctx -> { 			                	
+			                	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_BINARY_HELP"),false);
+			                	return 1;
+			                    }))
+		            .executes(ctx -> {
+		            	//help
+		            	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_SEND_HELP"),false);
+		                return 1;
+		            });	
+		}
+	    
 	       	
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> playerMovement() {
+	    return Commands.literal("PLAYER_MOVEMENT")
+		.then(Commands.argument("WSADJCS", StringArgumentType.string())
+                .executes(ctx -> { 			                	
+                	String movementClues = StringArgumentType.getString(ctx, "WSADJCS");
+                	try {
+                		if(movementClues.length()!=7) {throw new Exception("Movement Clues must have 7 bits!");}
+                		for(int i=0;i<movementClues.length();i++) {if(movementClues.charAt(i)!='0' && movementClues.charAt(i)!='1') {throw new Exception("Only ones and zeroes allowed!");}}
+    	
+                		BitArray[] data = {new BitArray(movementClues, false)};
+                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data));
+                		
+                		
+                		StringTextComponent baseText= new StringTextComponent("");
+             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent movement clues: "));
+             			baseText.appendSibling(new StringTextComponent("\u00A7e"+movementClues));
+             			
+             			ctx.getSource().sendFeedback(baseText,false);	
+                		
+                	}
+                	catch (Exception e) 
+                	{ 
+                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+                	}
+                
+                	return 1;
+                    }))
+		
+        .executes(ctx -> { 
+        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+        	return 1;
+            });
+	    }
+	    
+	    public static ArgumentBuilder<CommandSource, ?> leftRightClick() {
+		    return Commands.literal("LEFT_RIGHT_CLICK")
+			.then(Commands.argument("LeftClick", BoolArgumentType.bool())
+					.then(Commands.argument("RightClick", BoolArgumentType.bool())
+			                .executes(ctx -> { 			                	
+			                	boolean leftClick =  BoolArgumentType.getBool(ctx, "LeftClick");
+			                	boolean rightClick =  BoolArgumentType.getBool(ctx, "RightClick");
+			                	try {
+			                		BitArray[] data = {new BitArray(leftClick),new BitArray(rightClick)};
+			                		System.out.print("\nDEBUG: "+data.toString());
+			                		Serial.serialInterface.echoPackage(new Package(PackageType.BINARY,OrderType.LEFT_RIGHT_CLICK,data));
+			                		
+			                		StringTextComponent baseText= new StringTextComponent("");
+			             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent Left/RightClick clues: "));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+Boolean.toString(leftClick)));
+			             			baseText.appendSibling(new StringTextComponent("\u00A72"+","));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+Boolean.toString(rightClick)));
+			             			
+			             			ctx.getSource().sendFeedback(baseText,false);	
+			                		
+			                	}
+			                	catch (Exception e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+			                	}
+			                
+			                	return 1;
+			                    }))
+					
+	                .executes(ctx -> { 			                	 
+	                	return 1;
+	                    }))
+				
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_LEFT_RIGH_CLICK_HELP"),false);
+	        	return 1;
+	            });
+		    }
+		    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> cameraMovement() {
+		    return Commands.literal("CAMERA_MOVEMENT")
+			.then(Commands.argument("Yaw", FloatArgumentType.floatArg())
+					.then(Commands.argument("Pitch", FloatArgumentType.floatArg())
+			
+			                .executes(ctx -> { 			                	
+			                	float yaw = FloatArgumentType.getFloat(ctx, "Yaw");
+			                	float pitch = FloatArgumentType.getFloat(ctx, "Pitch");
+			                	try {
+			                	
+			                		Serial.serialInterface.echoPackage(binaryCommunication.Package.createCameraMovementPackage(yaw, pitch));
+			                		StringTextComponent baseText= new StringTextComponent("");
+			             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent yaw/pitch: "));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+yaw));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7a"+"/"));
+			             			baseText.appendSibling(new StringTextComponent("\u00A7e"+pitch));
+			             			
+			             			ctx.getSource().sendFeedback(baseText,false);	
+			                		
+			                	}
+			                	catch (Exception e) 
+			                	{ 
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+			                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+			                	}
+			                	
+			                	
+			                	return 1;
+			                    }))
+
+					
+	                .executes(ctx -> { 			                	
+	                	float yaw = FloatArgumentType.getFloat(ctx, "Yaw");
+	                	try {
+	                	
+	                		Serial.serialInterface.echoPackage(binaryCommunication.Package.createCameraMovementPackage(yaw, 0));
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent yaw/pitch: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+yaw));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7a"+"/"));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+"0.0"));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
+	    
+	    
+	    public static ArgumentBuilder<CommandSource, ?> hotBar() {
+		    return Commands.literal("HOT_BAR")
+			.then(Commands.argument("Previous/Next", BoolArgumentType.bool())
+	                .executes(ctx -> { 			                	
+	                	boolean hotbarClue = BoolArgumentType.getBool(ctx, "Previous/Next");
+	                	try {
+	                		BitArray[] data = {new BitArray(hotbarClue)};
+	                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.HOT_BAR,data));
+	                		
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent hot bar clue: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+hotbarClue));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
+	    public static ArgumentBuilder<CommandSource, ?> inventory() {
+		    return Commands.literal("PLAYER_MOVEMENT")
+			.then(Commands.argument("WSADJCS", StringArgumentType.string())
+	                .executes(ctx -> { 			                	
+	                	String movementClues = StringArgumentType.getString(ctx, "WSADJCS");
+	                	try {
+	                		if(movementClues.length()!=7) {throw new Exception("Movement Clues must have 7 bits!");}
+	                		for(int i=0;i<movementClues.length();i++) {if(movementClues.charAt(i)!='0' && movementClues.charAt(i)!='1') {throw new Exception("Only ones and zeroes allowed!");}}
+	    	
+	                		BitArray[] data = {new BitArray(movementClues, false)};
+	                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data));
+	                		
+	                		
+	                		StringTextComponent baseText= new StringTextComponent("");
+	             			baseText.appendSibling(new StringTextComponent("\u00A72"+"Sent movement clues: "));
+	             			baseText.appendSibling(new StringTextComponent("\u00A7e"+movementClues));
+	             			
+	             			ctx.getSource().sendFeedback(baseText,false);	
+	                		
+	                	}
+	                	catch (Exception e) 
+	                	{ 
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"Failed to send the pakage"),false);
+	                		ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                	}
+	                
+	                	return 1;
+	                    }))
+			
+	        .executes(ctx -> { 
+	        	ctx.getSource().sendFeedback(new StringTextComponent("PRINT_PLAYER_MOVEMENT_HELP"),false);
+	        	return 1;
+	            });
+		    }
 	    
 	    //SEND
 	    public static ArgumentBuilder<CommandSource, ?> registerSend() {

@@ -25,6 +25,7 @@ public class SerialInterface implements SerialPortEventListener
     public void connect(String selectedPort) throws SerialPortException
     {
     	if(serialPort!=null) {throw new SerialPortException("", "", "Already connected to a port");}
+    	
     	this.serialPort = new SerialPort(selectedPort);
         serialPort.openPort(); //Open serial port
         serialPort.setParams(SerialPort.BAUDRATE_9600, SerialPort.DATABITS_8,SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
@@ -41,16 +42,20 @@ public class SerialInterface implements SerialPortEventListener
 	}
 	
 	public void disconnect() throws SerialPortException {
-			serialPort.closePort();
+			if(serialPort.isOpened()) {serialPort.closePort();}
 			serialPort=null;
 	}
 	
 	public static void repeat(String value) throws SerialPortException {
-		SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(value.getBytes()));
+		SerialMessageInterpreter.interpret(value.getBytes());
+	}
+	
+	public void echoPackage(binaryCommunication.Package package1) {
+		SerialMessageInterpreter.interpret(package1.getRawData());
 	}
 	
 	public static void repeat(byte[] bytes) throws SerialPortException {
-		SerialMessageInterpreter.interpret((BinaryByte.getBinaryByteArray(bytes)));
+		SerialMessageInterpreter.interpret(bytes);
 	}
 	
 
@@ -58,13 +63,15 @@ public class SerialInterface implements SerialPortEventListener
         if(event.isRXCHAR()){
             try {
             	int value = event.getEventValue();
-                SerialMessageInterpreter.interpret(BinaryByte.getBinaryByteArray(serialPort.readBytes(value)));     
+                SerialMessageInterpreter.interpret(serialPort.readBytes(value));     
             } catch (SerialPortException ex) {
                 System.out.println(ex);
             }
             
         }
     }
+
+
 }
 
 
