@@ -1,24 +1,40 @@
 package interpretation;
 
 import InventoryControl.CraftingGUI;
+
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.server.ServerWorld;
 
 
 public class PlayerController {
 	
 	private GameSettings gs = null;
 	private PlayerEntity player= null;
+	ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
+	ServerWorld sworld=Minecraft.getInstance().getIntegratedServer().getWorld(DimensionType.OVERWORLD);
 	private boolean inventoryStatus=false;
+	private net.minecraft.client.multiplayer.PlayerController pc;
 	private CraftingGUI GUI=new CraftingGUI(false);
+	private Minecraft mc= Minecraft.getInstance();
+	private LeftMouseButtonEmulator leftClick;
+	private RightMouseButtonEmulator rightClick;
 	
-	PlayerController() 
+	
+	PlayerController()
 	{ 
 		gs= Minecraft.getInstance().gameSettings;
+		pc=Minecraft.getInstance().playerController;
 		this.player = Minecraft.getInstance().player;
+		this.rightClick=new RightMouseButtonEmulator();
+		rightClick.setRun(false);
+		this.leftClick=new LeftMouseButtonEmulator();
+		leftClick.setRun(false);
 	}
 	
 	
@@ -53,13 +69,44 @@ public class PlayerController {
 	 
 	//LEFT/RIGHT CLICK
 		 //left
-		 public void startLeftClicking() { KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), true);}
-		 public void stopLeftClicking() {KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), false);}
-		 public void leftClicking(boolean b) {System.out.print("LEFT");KeyBinding.setKeyBindState(gs.keyBindUseItem.getKey(), b);}
-		 //right
-		 public void startRightClicking() { KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), true);}
-		 public void stopRightClicking() {KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), false);}
-		 public void rightClicking(boolean b) {System.out.print("RIGHT");KeyBinding.setKeyBindState(gs.keyBindAttack.getKey(), b);}
+		 public void leftClicking(boolean b) {
+			 if(b){startLeftClicking(); return;}
+			 stopLeftClicking();
+		}
+
+		 public void startLeftClicking() {
+			 this.leftClick=new LeftMouseButtonEmulator();
+			 leftClick.setRun(true);
+			 this.leftClick.start();
+		 }
+		 
+		public void stopLeftClicking() {
+			if(leftClick.getRun()) {
+				//notify the thread that it's time to stop running
+				 this.leftClick.setRun(false);
+			}
+			 
+		 }
+		 
+		
+		//right
+		public void rightClicking(boolean b) {
+			 if(b){startRightClicking(); return;}
+			 stopRightClicking();
+		}
+		
+		public void startRightClicking() {
+			 this.rightClick=new RightMouseButtonEmulator();
+			 rightClick.setRun(true);
+			 this.rightClick.start();
+		 }
+		 public void stopRightClicking() {
+			if(rightClick.getRun()) {
+				 //notify the thread that it's time to stop running
+				 this.rightClick.setRun(false);
+			}
+		 }
+		 
 	    	
 	//CAMERA  
 		public void setCamera(float around,float upDown) {setCameraAround(around);setCameraUpDown(upDown);}
