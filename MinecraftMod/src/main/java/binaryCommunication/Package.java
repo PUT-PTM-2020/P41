@@ -96,6 +96,7 @@ public class Package{
 		public Package(byte input[]) throws Exception{
 			if(input==null) {throw new Exception("No data in package!");}
 			this.rawData=input;
+				
 
 			parsePackageType();  
 			parseOrderType(); 

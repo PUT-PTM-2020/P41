@@ -63,13 +63,29 @@ public class SerialInterface implements SerialPortEventListener
         if(event.isRXCHAR()){
             try {
             	int value = event.getEventValue();
-                SerialMessageInterpreter.interpret(serialPort.readBytes(value));     
+            	byte[] receivedData=serialPort.readBytes(value);
+            	byte [] fourByteArray= new byte[4];
+            	int i=0;
+            	
+            	
+            	//divide received data into 4 byte packages
+            		//assuming all data is sent in 4 byte packages
+            	while(i<receivedData.length){
+            		if(i%4==0) {fourByteArray= new byte[4];}
+            		fourByteArray[i%4]=receivedData[i];
+            		i++;
+            		if(i%4==0) {SerialMessageInterpreter.interpret(fourByteArray);}   
+            	}
+            	//if the recived data length isn't a multiple of 4, interpret the incomplete array
+            	if(receivedData.length%4!=0) {SerialMessageInterpreter.interpret(fourByteArray);}
+                 
             } catch (SerialPortException ex) {
                 System.out.println(ex);
             }
             
         }
     }
+	
 
 
 }
