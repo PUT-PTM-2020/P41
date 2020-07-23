@@ -37,6 +37,7 @@ public class ModCommands {
 	            .then(registerSend())  //sends a message to the connected port e.g. "/serial ABBA"
 	            .then(registerSendB()) //sends a message as binary
 	            .then(registerEcho())
+	            .then(registerDebug())
 	            .then(registerEQ())
 	            .then(registerDisconnect()) //disconnects from the currently connected port "/serial disconnect"
 	            .then(registerIsConnected()) //shows whether any ports are connected 
@@ -49,6 +50,33 @@ public class ModCommands {
 	    	//register alias
 	    	dispatcher.register(Commands.literal("s").redirect(allComands));
 	    }	
+	    
+	    //Equipment test
+	    public static ArgumentBuilder<CommandSource, ?> registerDebug() {
+	    	 return Commands.literal("debug") 
+			            .executes(ctx -> {
+			            	try 
+			            	{
+			            		boolean outcome=SerialMessageInterpreter.toogleprintPackages();
+			            		StringTextComponent baseText= new StringTextComponent("");
+	                 			baseText.appendSibling(new StringTextComponent("Debugging mode turned "));
+	                 			
+	                 			if(outcome) { baseText.appendSibling(new StringTextComponent("\u00A72"+"ON"));}
+	                 			else {baseText.appendSibling(new StringTextComponent("\u00A7c"+"OFF"));}
+	                 			
+	                 			ctx.getSource().sendFeedback(baseText,false);
+	                 			
+			            	}
+			            	catch(Exception e) 
+	                 		{
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A7c"+"COMMAND FAILED"),false);
+	                 			ctx.getSource().sendFeedback(new StringTextComponent("\u00A74Error: "+e.toString()),false);
+	                 		}	
+			                return 1;
+			            });    
+	    }
+	    
+	    
 	    
 	    //Equipment test
 	    public static ArgumentBuilder<CommandSource, ?> registerEQ() {

@@ -28,13 +28,15 @@ import net.minecraftforge.registries.ForgeRegistryEntry;
 
 public class SerialMessageInterpreter {
 	private static PlayerController pc = new PlayerController();
-
+	public static boolean printPackages= false;
 	
 	public static void interpret(byte data[]) {
 		try {
 			//controlRecepies();
 			Package pack = new Package(data);
-			sendToPlayer(pack.toString());
+			if(printPackages) {
+				sendToPlayer(pack.toString());
+			}
 			execute(pack);
 		} catch (Exception e) {
 			sendToPlayer(e.toString());
@@ -123,6 +125,11 @@ public class SerialMessageInterpreter {
 		baseText.appendSibling(new StringTextComponent("\u00A73"+"Port: "));
 		baseText.appendSibling(new StringTextComponent("\u00A7f"+data));
 		Minecraft.getInstance().player.sendMessage(baseText);
+	}
+	
+	public static boolean toogleprintPackages() {
+		printPackages=!printPackages;
+		return printPackages;
 	}
 	
 	
