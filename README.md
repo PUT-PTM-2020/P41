@@ -13,17 +13,17 @@ MODYFIKACJA:
  INNE:
  - zbieranie surowych danych z żyroskopu
  
- *[21.03.2020] Prace nad komunikacją
+[21.03.2020] Prace nad komunikacją
  MODYFIKACJA:
  - klasa do binarnej komunikacji PortSeryjny->Usart
  - komenda echo <wiadomość>- udaje, że dana wiadomość została odebrana na porcie seryjnym.
  - wysyłanie wiadomości jako łańcuchy binarne
  
- *[01.04.2020] Prace nad komunikacją
+[01.04.2020] Prace nad komunikacją
   MODYFIKACJA:
   - interpretacja paczek kontrolujących ruch kamery
   
- *[13.04.2020] Łączenie Peryferiów i Optymalizacja Paczki
+[13.04.2020] Łączenie Peryferiów i Optymalizacja Paczki
   STM:
   - połączono STM z peryferiami
     - moduł HC05  (USART6)
@@ -35,10 +35,10 @@ MODYFIKACJA:
   - obsługa paska ekwipunku
 
 ## Napotkane problemy
-*[13.04.2020] Złącza Arduino
+[13.04.2020] Złącza Arduino
    2 z 3 Arduino mają problemy ze spawem, których w tym momencie (13.04.2020) nie można naprawić, ze względu na brak odpowiedniego 
    sprzętu i niemożność zdobycia go z powodu kwarantanny.
 ## Autorzy
-*Maciej Stefaniak
-*Mateusz Stelmasiak
-*Jędrzej Wasik
+Maciej Stefaniak
+Mateusz Stelmasiak
+Jędrzej Wasik
