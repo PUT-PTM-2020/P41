@@ -20,6 +20,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.util.ClientRecipeBook;
 import net.minecraft.client.util.RecipeBookCategories;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -29,6 +30,7 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.registries.ForgeRegistries;
 
 
 public class CraftingGUI extends Screen {
@@ -38,6 +40,7 @@ public class CraftingGUI extends Screen {
 	private ArrayList<ItemStack> inventory;
 	private boolean launchedByCraftingTable=false;
 	private int currentlySelected;
+	private ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 	
 	public CraftingGUI(boolean launchedByCraftingTable) {
 		super(new StringTextComponent("CRAFTING CATEGORIES"));
@@ -68,6 +71,8 @@ public class CraftingGUI extends Screen {
 			int i=0;
 			int buttonWidth=(int) (0.3*this.width);
 			int buttonHeight=(int) (0.11*this.height);
+			System.out.println("\nWidth: "+Integer.toString(buttonWidth));
+			System.out.println("\nHeight: "+Integer.toString(buttonHeight));
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
 				 this.addButton(new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat, (p_213055_1_) -> {
 			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this));
@@ -93,7 +98,6 @@ public class CraftingGUI extends Screen {
 	
 	//for player to know which button is currently selected
 	public void focusButton(int buttonIndex) {
-	
 		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
 	}
 	
@@ -130,12 +134,14 @@ public class CraftingGUI extends Screen {
 		book=Minecraft.getInstance().player.getRecipeBook(); //gets all available recipes
 		List<RecipeList> allRecipies= book.getRecipes();
 		
+		
 		//for distinguishing between crafting in inventory or in a crafting table
 		int craftingwidth=2; int craftingheight=2;
-		if(launchedByCraftingTable){craftingwidth=4;craftingheight=4;}
+		if(launchedByCraftingTable){craftingwidth=3;craftingheight=3;}
 		
 		
 		this.inventory=getPlayerInventoryAsItemStacks();
+		//SerialMessageInterpreter.sendToPlayer("\nINVENTARZ: "+Arrays.deepToString(inventory.toArray()));
 		//iterate over all available recipes
 		for(RecipeList rlist:allRecipies) 
 		{
@@ -143,6 +149,7 @@ public class CraftingGUI extends Screen {
 			IRecipe<?> temp=it.next();
 			while(it.hasNext()) 
 			{
+				//SerialMessageInterpreter.sendToPlayer("\n"+temp.getRecipeOutput().toString());
 				//check if recipe has been unlocked by the player
 				if(book.isUnlocked(temp))
 				{
@@ -174,12 +181,11 @@ public class CraftingGUI extends Screen {
 									 break;
 								}  
 							 }
-							 if(!canBeCrafted) {break;}
 						}
-						if(canBeCrafted && !isAir) {	craftable.add(temp);break;}
+						if(canBeCrafted && !isAir) {craftable.add(temp);break;}
+						this.inventory=getPlayerInventoryAsItemStacks();
 					}	
 				}		
-				this.inventory=getPlayerInventoryAsItemStacks();
 				temp=it.next();
 			}
 				
@@ -191,8 +197,6 @@ public class CraftingGUI extends Screen {
 	   public void render(int p_render_1_, int p_render_2_, float p_render_3_) {
 		  this.renderBackground();
 		  
-		  Minecraft.getInstance().getTextureManager().bindTexture(new ResourceLocation( "serial","craftingguibg.png"));
-
 		  RenderSystem.pushMatrix();
 		  float scaleFactor=1.6f;
 		  RenderSystem.scalef(scaleFactor,scaleFactor, 1.0f);
@@ -245,7 +249,7 @@ public class CraftingGUI extends Screen {
 		 this.inventory.clear();
 		 
 		 ArrayList<ItemStack> temp= new ArrayList<ItemStack>();
-		 PlayerInventory pInv= Minecraft.getInstance().player.inventory;
+		 PlayerInventory pInv= splayer.inventory;
 		 
 		 for(int i=0;i<pInv.getSizeInventory();i++) {
 			 ItemStack curritem=pInv.getStackInSlot(i);

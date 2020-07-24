@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.serial.serialmod.Serial;
 
@@ -40,16 +41,23 @@ public class CategoryButton extends Button {
 
 	@Override 
 	public void renderButton(int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);	
+	
 		Minecraft.getInstance().getTextureManager().bindTexture(icon);
+		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+	    RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         int j = 0;
-        if (!this.active) {
+        if (this.active) {
            j += this.width * 2;
         } else if (this.isHovered()) {
            j += this.width * 3;
         }
-
+        
+        
         this.blit(this.x, this.y, j, 0, this.width, this.height);
+        
+            
      } 
 
 
