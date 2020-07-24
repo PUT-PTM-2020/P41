@@ -64,7 +64,6 @@ public class Package{
 		private static String[] CAMERA_MOVEMENT_ARGUMENTS ={"Yaw","Pitch"};
 		private static String[] HOT_BAR_ARGUMENTS ={"Next/Previous"};
 		private static String[] LEFT_RIGHT_CLICK_ARGUMENTS ={"Left","Right"};
-		private static String[] INVENTORY_ARGUMENTS ={"GesutreUp","GesutreDown"};
 		
 		private static int PACKAGE_TYPE_LENGHT=1;
 		private static int ORDER_TYPE_LENGHT=4;

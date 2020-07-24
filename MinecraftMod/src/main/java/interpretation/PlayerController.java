@@ -92,6 +92,7 @@ public class PlayerController {
 		//right
 		public void rightClicking(boolean b) {
 			 if(b){startRightClicking(); return;}
+			 System.out.println("\nHELLO THERE");
 			 stopRightClicking();
 		}
 		
@@ -100,10 +101,12 @@ public class PlayerController {
 			 rightClick.setRun(true);
 			 this.rightClick.start();
 		 }
+		
 		 public void stopRightClicking() {
 			if(rightClick.getRun()) {
-				 //notify the thread that it's time to stop running
 				 this.rightClick.setRun(false);
+				 this.rightClick.stop();
+				 KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKey(), false);
 			}
 		 }
 		 

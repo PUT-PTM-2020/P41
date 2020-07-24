@@ -51,7 +51,11 @@ public class ModCommands {
 	    	dispatcher.register(Commands.literal("s").redirect(allComands));
 	    }	
 	    
-	    //Equipment test
+	    
+	    
+	  
+	    
+	    //Show package contents
 	    public static ArgumentBuilder<CommandSource, ?> registerDebug() {
 	    	 return Commands.literal("debug") 
 			            .executes(ctx -> {

@@ -31,6 +31,7 @@ public class RightMouseButtonEmulator extends Thread{
    	    KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKey(), true);
    	    
 	    while(run) {
+	        System.out.println("\nRUNNING "+Boolean.toString(run));
 	    	if (!mc.playerController.getIsHittingBlock()) {
 	            if (!(this.player).isRowingBoat()) {
 	               for(Hand hand : Hand.values()) {
@@ -105,16 +106,29 @@ public class RightMouseButtonEmulator extends Thread{
 	         }
 	  
 	        //sleep
-	        try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+	        try { Thread.sleep(100);} catch (InterruptedException e) { e.printStackTrace();}
 	    }
+	    System.out.println("\nWYLACZANIE");
 		//unpress the key
    	    KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKey(), false);
+   	   
+   	    for(Hand hand : Hand.values()) {
+   	     ItemStack itemstack = this.player.getHeldItem(hand);
+   	      if (!itemstack.isEmpty()) {
+              ActionResultType actionresulttype2 = mc.playerController.processRightClick(this.player, mc.world, hand);
+              if (actionresulttype2.func_226246_a_()) {
+                 if (actionresulttype2.func_226247_b_()) {
+                    this.player.swingArm(hand);
+                 }
+
+                 mc.gameRenderer.itemRenderer.resetEquippedProgress(hand);
+                 return;
+              }
+           }
+   	    }
+   	 System.out.println("\nWYLACZONE");
     }
     
-    public void setRun(boolean b) {this.run=b;}
+    public void setRun(boolean b){this.run=b;}
     public boolean getRun() {return this.run;}
 }
