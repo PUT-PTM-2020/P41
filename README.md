@@ -2,10 +2,22 @@
 
 ## Efekt końcowy
  <img src="zdjecie jeden" alt="Wszystkie kontrolery">
+ 
+### Gameplay
+ [![Obejrzyj Gameplay](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/vt5fpE0bzSY)
 
-### [GamePlay](https://www.temporary-url.com/2760D)
+## Opis projektu
+...
 
-## Postępy w pracach
+## Instalacja Modyfikacji
+1. Pobierz plik .zip [tutaj](/modInstallationPackage.zip)
+2. Zainstaluj forge-1.15.2.exe.
+3. Włącz minecraft z nowo stworzoną konfiguracją "forge 1.15..." aby wygenerować pliki forge'a.
+4. Wyszukaj folder %appdata% przejdź do .minecraft/mods i umieść tam serial<wersja>.jar.
+5. /serial help daje do wszystkich dostępnych komend.
+
+## Prace nad projektem
+### Changelog:
 [19.03.2020] Pierwszy commit 
 - MODYFIKACJA:
   - init modyfikacja do minecrafta
@@ -33,12 +45,13 @@
    - możliwość tworzenia paczek i wysyłania komendą /serial echoP <typPaczki> <typRozkazu> <arg1> <arg2> itd.
    - obsługa paska ekwipunku
 
-## Napotkane problemy
+### Napotkane problemy:
 [13.04.2020] Złącza Arduino
 - 2 z 3 Arduino mają problemy ze spawem, których w tym momencie (13.04.2020) nie można naprawić, ze względu na brak odpowiedniego sprzętu i niemożność zdobycia go z powodu kwarantanny.
+
 ## Autorzy
-- Maciej Stefaniak
-- Mateusz Stelmasiak
-- Jędrzej Wasik
+- Maciej Stefaniak <a href="https://github.com/madragonse">[profil Github]</a>
+- Mateusz Stelmasiak <a href="https://github.com/mateusz-stelmasiak">[profil Github]</a>
+- Jędrzej Wasik <a href="https://github.com/Jwasik">[profil Github]</a>
 
 >Politechnika Poznańska 2020
