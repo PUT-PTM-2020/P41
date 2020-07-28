@@ -72,18 +72,33 @@ public class SerialMessageInterpreter {
 				selectItem(pack.getArguments()[0]);
 				return;
 			case LEFT_RIGHT_CLICK:
+				if(pc.getInventoryStatus()) {rightClickInv(pack.getArguments());}
 				toogleLeftRightClick(pack.getArguments());
 				return;
 			case INVENTORY:
-				pc.setInventoryStatus(pack.getArguments()[0].bitAt(0));
+				sendToPlayer("sprawdzam czy argument!");
+				if(pack.getArguments().length>0) {
+					pc.setInventoryStatus(pack.getArguments()[0].bitAt(0));
+				}
 				return;
 			default: return;
 		}
 		
 	}
 	
+	public static void rightClickInv(BitArray[] arg) throws Exception {
+		sendToPlayer("BUM");
+		//right click
+		if(arg[1].bitAt(0)) pc.clickSelected();
+	}
+	
 	public static void navigateInventory(BitArray navigationClues) throws Exception {
-		pc.gesture(navigationClues.bitAt(0));
+		//When W pressed
+		if(navigationClues.bitAt(0)) pc.gestureUp();
+		//when S pressed
+		if(navigationClues.bitAt(1)) pc.gestureDown();
+		//when jump pressed
+		if(navigationClues.bitAt(4)) pc.clickSelected();
 	}
 
 	public static void movePlayer(BitArray movementClues) throws Exception

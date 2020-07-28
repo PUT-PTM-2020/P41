@@ -24,6 +24,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.item.crafting.Ingredient;
@@ -33,13 +34,12 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 
-public class CraftingGUI extends Screen {
+public class CraftingGUI extends SerialGUI {
 	private List<IRecipe<?>> craftable;
 	private Map<RecipeBookCategories,List<IRecipe<?>>> craftableByCategory;
 	private ClientRecipeBook book;
 	private ArrayList<ItemStack> inventory;
 	private boolean launchedByCraftingTable=false;
-	private int currentlySelected;
 	private ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 	
 	public CraftingGUI(boolean launchedByCraftingTable) {
@@ -49,7 +49,7 @@ public class CraftingGUI extends Screen {
 		craftableByCategory= new HashMap<RecipeBookCategories, List<IRecipe<?>>>();
 		this.launchedByCraftingTable=launchedByCraftingTable;
 		this.inventory= new ArrayList<ItemStack>();
-		this.currentlySelected=0;
+		currentlySelected=0;
 	}
 	
 
@@ -74,9 +74,10 @@ public class CraftingGUI extends Screen {
 			System.out.println("\nWidth: "+Integer.toString(buttonWidth));
 			System.out.println("\nHeight: "+Integer.toString(buttonHeight));
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
-				 this.addButton(new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat, (p_213055_1_) -> {
-			         this.minecraft.displayGuiScreen(new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this));
-			      }));
+				 CraftingCategoryGUI gui=new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this);
+				 this.addButton(
+						 new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat, 
+						 (p_03) -> {this.minecraft.displayGuiScreen(gui);},gui));
 				 i++;
 			}
 			this.focusButton(0);
@@ -85,27 +86,16 @@ public class CraftingGUI extends Screen {
 	}
 	
 	
-	public void nextCategory() {
-		currentlySelected=(currentlySelected+1)%craftable.size();
-		focusButton(currentlySelected);
-	}
-	
-	public void previousCategory() {
-		currentlySelected--;
-		if(currentlySelected<0) {currentlySelected=craftable.size()-1;}
-		focusButton(currentlySelected);
-	}
-	
-	//for player to know which button is currently selected
-	public void focusButton(int buttonIndex) {
-		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
-	}
-	
-	public void rightClickFocusedButton() {
+	@Override
+	public SerialGUI rightClickFocusedButton() {
 		for(int i=0;i<this.buttons.size();i++) 
 		{
-			if(this.buttons.get(i).isFocused()) {((Button) this.buttons.get(i)).onPress();}
+			if(this.buttons.get(i).isFocused()) {
+				((CategoryButton) this.buttons.get(i)).onPress();
+				return ((CategoryButton) this.buttons.get(i)).getGUI();
+			}
 		}
+		return null;
 	}
 	
 	public void updateCategories() {
@@ -182,7 +172,9 @@ public class CraftingGUI extends Screen {
 								}  
 							 }
 						}
-						if(canBeCrafted && !isAir) {craftable.add(temp);break;}
+						if(canBeCrafted && temp.getRecipeOutput().getItem().equals(Items.AIR)) {
+							craftable.add(temp);break;
+						}
 						this.inventory=getPlayerInventoryAsItemStacks();
 					}	
 				}		

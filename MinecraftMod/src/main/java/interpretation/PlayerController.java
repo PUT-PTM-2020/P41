@@ -1,10 +1,12 @@
 package interpretation;
 
+import InventoryControl.CraftingCategoryGUI;
 import InventoryControl.CraftingGUI;
-
+import InventoryControl.SerialGUI;
 import net.minecraft.client.GameSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -20,7 +22,7 @@ public class PlayerController {
 	ServerWorld sworld=Minecraft.getInstance().getIntegratedServer().getWorld(DimensionType.OVERWORLD);
 	private boolean inventoryStatus=false;
 	private net.minecraft.client.multiplayer.PlayerController pc;
-	private CraftingGUI GUI=new CraftingGUI(false);
+	private SerialGUI GUI;
 	private Minecraft mc= Minecraft.getInstance();
 	private LeftMouseButtonEmulator leftClick;
 	private RightMouseButtonEmulator rightClick;
@@ -35,6 +37,7 @@ public class PlayerController {
 		rightClick.setRun(false);
 		this.leftClick=new LeftMouseButtonEmulator();
 		leftClick.setRun(false);
+		GUI= new CraftingGUI(false);
 	}
 	
 	
@@ -92,7 +95,6 @@ public class PlayerController {
 		//right
 		public void rightClicking(boolean b) {
 			 if(b){startRightClicking(); return;}
-			 System.out.println("\nHELLO THERE");
 			 stopRightClicking();
 		}
 		
@@ -124,24 +126,24 @@ public class PlayerController {
 
 	 
 	 //CRAFTING
-		 public void toogleInventory() {
-
-			 inventoryStatus=!inventoryStatus;
-			 if(inventoryStatus) {openInventory(); return;}
+		 public void updateCraftingGUI() {
+			 if(this.inventoryStatus) {openInventory(); return;}
 			 closeInventory();
-		 }
-		 public void setOpenTo(boolean status) {if(this.inventoryStatus) {this.openInventory();}else{this.closeInventory();}}
-		 public void openInventory() { Minecraft.getInstance().displayGuiScreen(GUI); }
+	     }
+		 public void openInventory() {
+			 GUI= new CraftingGUI(false);
+			 mc.displayGuiScreen(GUI);}
 		 public void closeInventory() {GUI.onClose(); }
 		 
-		 public void gesture(boolean gesture) {
-			 //clockwise motion (right,down)
-			 if(gesture) {
-				 GUI.nextCategory();
-				 return; 
-			 }
-			 //counterclockwise motion (left,down)
-			 GUI.previousCategory();
+		 public void gestureUp() {
+			 GUI.next();
+		 }
+		 public void gestureDown() {
+			GUI.previous();
+		 }
+		 public void clickSelected() {
+			 SerialGUI temp= GUI.rightClickFocusedButton();
+			 if(temp!=null) {this.GUI=temp;}
 		 }
 	   
 	//GETTERS/SETTERS
@@ -149,7 +151,9 @@ public class PlayerController {
 		public PlayerEntity getPlayer() { return player;}
 		public void setPlayer(ClientPlayerEntity player) { this.player = player;}
 		public void setGs(GameSettings gs) { this.gs = gs;}
-		public void setInventoryStatus(boolean status) {this.inventoryStatus=status; this.setOpenTo(status);}
+		public void setInventoryStatus(boolean status) {
+			this.inventoryStatus=status; updateCraftingGUI();
+			}
 		public boolean getInventoryStatus() {return this.inventoryStatus;}
 		
 }

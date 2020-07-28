@@ -7,6 +7,7 @@ import org.lwjgl.opengl.GL11;
 
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -17,7 +18,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
 
-public class CraftingCategoryGUI extends Screen{
+public class CraftingCategoryGUI extends SerialGUI{
 	private String category;
 	private List<IRecipe<?>> craftable;
 	//back button handling
@@ -42,28 +43,16 @@ public class CraftingCategoryGUI extends Screen{
 	
 	public void tick() { super.tick();}
 	
-	public void nextCategory() {
-		currentItem=(currentItem+1)%craftable.size();
-		focusButton(currentItem);
-	}
-	
-	public void previousCategory() {
-		currentItem--;
-		if(currentItem<0) {currentItem=craftable.size()-1;}
-		focusButton(currentItem);
-	}
-	
-	//for player to know which button is currently selected
-	public void focusButton(int buttonIndex) {
-
-		if(buttonIndex<this.buttons.size()) {this.buttons.get(buttonIndex).changeFocus(true);}
-	}
-	
-	public void rightClickFocusedButton() {
+	@Override
+	public SerialGUI rightClickFocusedButton() {
 		for(int i=0;i<this.buttons.size();i++) 
 		{
-			if(this.buttons.get(i).isFocused()) {((Button) this.buttons.get(i)).onPress();}
+			if(this.buttons.get(i).isFocused()) {
+				((Button) this.buttons.get(i)).onPress();
+				return null;
+			}
 		}
+		return null;
 	}
 	
 	public void init() {
@@ -94,7 +83,7 @@ public class CraftingCategoryGUI extends Screen{
 	//when a recipe is chosen
 	private void craftItem(IRecipe<?> recipe) throws Exception {
 		ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
-		
+		ClientPlayerEntity player = Minecraft.getInstance().player;
 		//delete the ingredients from player's inventory
 		NonNullList<Ingredient> ingredients=recipe.getIngredients();
 
@@ -120,8 +109,10 @@ public class CraftingCategoryGUI extends Screen{
 		}
 			
 		//add crafted item
+			//server side
 		splayer.inventory.addItemStackToInventory(recipe.getRecipeOutput());
-		
+			//player side
+		player.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		//update recepies
 		((CraftingGUI) lastScreen).updateCraftableRecipies(false);
 		((CraftingGUI) lastScreen).updateCategories();

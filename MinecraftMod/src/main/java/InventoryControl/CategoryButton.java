@@ -10,10 +10,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.serial.serialmod.Serial;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.util.RecipeBookCategories;
 
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -33,30 +35,47 @@ public class CategoryButton extends Button {
 		}).collect(Collectors.toMap(data -> (RecipeBookCategories) data[0], data -> (ResourceLocation) data[1]));
 	//this specific button's  icon
 	private ResourceLocation icon;
-		
-	public CategoryButton(int xIn, int yIn, int widthIn, int heightIn, RecipeBookCategories category,Button.IPressable onPress) {
-		super(xIn, yIn, widthIn, heightIn, category.name(), onPress);
-		this.icon=icons.get(category);
+	private CraftingCategoryGUI GUI;
+
+	
+	public CategoryButton(int xIn, int yIn, int buttonWidth, int buttonHeight, RecipeBookCategories cat,
+			IPressable onPress, CraftingCategoryGUI GUI) {
+			super(xIn, yIn, buttonWidth, buttonHeight, cat.name(), onPress);
+			this.GUI=GUI;
+			this.icon=icons.get(cat);
+	}
+
+	public CraftingCategoryGUI getGUI() {
+		return this.GUI;
 	}
 
 	@Override 
 	public void renderButton(int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
 	
-		Minecraft.getInstance().getTextureManager().bindTexture(icon);
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-	    RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-        int j = 0;
-        if (this.active) {
-           j += this.width * 2;
-        } else if (this.isHovered()) {
-           j += this.width * 3;
-        }
+		//Minecraft.getInstance().getTextureManager().bindTexture(icon);
+        //int j = 0;
+        //if (this.active) {
+        //   j += this.width * 2;
+        //} else if (this.isHovered()) {
+        //   j += this.width * 3;
+        //}
         
-        
-        this.blit(this.x, this.y, j, 0, this.width, this.height);
-        
+  
+       // this.blit(this.x, this.y, j, 0, this.width, this.height);	
+	  Minecraft minecraft = Minecraft.getInstance();
+      FontRenderer fontrenderer = minecraft.fontRenderer;
+      minecraft.getTextureManager().bindTexture(WIDGETS_LOCATION);
+      RenderSystem.color4f(1.0F, 1.0F, 1.0F, this.alpha);
+      int i = this.getYImage(this.isHovered());
+      RenderSystem.enableBlend();
+      RenderSystem.defaultBlendFunc();
+      RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
+      this.blit(this.x, this.y, 0, 46 + i * 20, this.width / 2, this.height);
+      this.blit(this.x + this.width / 2, this.y, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
+      this.renderBg(minecraft, p_renderButton_1_, p_renderButton_2_);
+      int j = getFGColor();
+      this.drawCenteredString(fontrenderer, this.getMessage(), this.x + this.width / 2, this.y + (this.height - 8) / 2, j | MathHelper.ceil(this.alpha * 255.0F) << 24);
+    
             
      } 
 

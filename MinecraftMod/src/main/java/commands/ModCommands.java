@@ -87,14 +87,59 @@ public class ModCommands {
 	    	 return Commands.literal("eq") 
 			            .executes(ctx -> {
 			            	try 
-			            	{
-			           
+			            	{	
 			            		StringTextComponent baseText= new StringTextComponent("");
 	                 			baseText.appendSibling(new StringTextComponent("\u00A72"+"Launching crafting EQ"));
 	                 			ctx.getSource().sendFeedback(baseText,false);
 	                 			
+	                 			//open inv
+	                 			BitArray[] data1 = {new BitArray(true)};
+								Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.INVENTORY,data1));
+			            		new Thread(){
+			            	        public void run(){
+			            	        	
+				                		try {
+				         
+											Thread.sleep(100);
+											//scroll down
+											String movementClues="0100000";
+											BitArray[] data2 = {new BitArray(movementClues, false)};
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data2));
+					                		Thread.sleep(100);
+					                		//chose
+					                		movementClues="0000100";
+											BitArray[] data3 = {new BitArray(movementClues, false)};
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data3));
+					                		Thread.sleep(100);
+					                		//scroll down
+					                		movementClues="0100000";
+											BitArray[] data4 = {new BitArray(movementClues, false)};
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data4));
+					                		Thread.sleep(100);
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data4));
+					                		Thread.sleep(100);
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data4));
+					                		Thread.sleep(200);
+					                		//scroll up
+					                		movementClues="1000000";
+											BitArray[] data5 = {new BitArray(movementClues, false)};
+					                		Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.PLAYER_MOVEMENT,data5));
+					                		Thread.sleep(200);
+					                		//craft
+					                		BitArray[] data6 = {new BitArray(false),new BitArray(true)};
+					                		Serial.serialInterface.echoPackage(new Package(PackageType.BINARY,OrderType.LEFT_RIGHT_CLICK,data6));
+					                		Thread.sleep(200);
+					                		BitArray[] data7 = {new BitArray(false)};
+											Serial.serialInterface.echoPackage(new binaryCommunication.Package(PackageType.BINARY,OrderType.INVENTORY,data7));
+					                		
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+			                 			
+			            	        }
+			            	      }.start();
+			            	 
 
-	                 			Minecraft.getInstance().displayGuiScreen(new CraftingGUI(true));
 		
 			            	}
 			            	catch(Exception e) 

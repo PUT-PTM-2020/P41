@@ -207,7 +207,7 @@ public class Package{
 			
 			if(arguments!=null) {
 				//for types in which special arguments are absent
-				if(this.orderType==orderType.INVENTORY || this.orderType==orderType.PLAYER_MOVEMENT || this.packageType==packageType.ASCII) 
+				if(this.orderType==orderType.PLAYER_MOVEMENT || this.packageType==packageType.ASCII) 
 				{
 					temp.concatenate(BitArray.bitArrayFromInt(0,SPECIAL_ARGUMENT_LENGHT));
 				}

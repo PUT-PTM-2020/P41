@@ -31,7 +31,7 @@ public class RightMouseButtonEmulator extends Thread{
    	    KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKey(), true);
    	    
 	    while(run) {
-	        System.out.println("\nRUNNING "+Boolean.toString(run));
+	        //System.out.println("\nRUNNING "+Boolean.toString(run));
 	    	if (!mc.playerController.getIsHittingBlock()) {
 	            if (!(this.player).isRowingBoat()) {
 	               for(Hand hand : Hand.values()) {
