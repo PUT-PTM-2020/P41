@@ -20,10 +20,10 @@ public class PlayerController {
 	private PlayerEntity player= null;
 	ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 	ServerWorld sworld=Minecraft.getInstance().getIntegratedServer().getWorld(DimensionType.OVERWORLD);
-	private boolean inventoryStatus=false;
+	private static boolean inventoryStatus=false;
 	private net.minecraft.client.multiplayer.PlayerController pc;
-	private SerialGUI GUI;
-	private Minecraft mc= Minecraft.getInstance();
+	private static SerialGUI GUI;
+	private static Minecraft mc= Minecraft.getInstance();
 	private LeftMouseButtonEmulator leftClick;
 	private RightMouseButtonEmulator rightClick;
 	
@@ -126,14 +126,15 @@ public class PlayerController {
 
 	 
 	 //CRAFTING
-		 public void updateCraftingGUI() {
-			 if(this.inventoryStatus) {openInventory(); return;}
+		 public static void updateCraftingGUI(boolean craftingTable) {
+			 if(inventoryStatus) {openInventory(craftingTable); return;}
 			 closeInventory();
 	     }
-		 public void openInventory() {
-			 GUI= new CraftingGUI(false);
+		 public static void openInventory(boolean craftingTable) {
+			 GUI= new CraftingGUI(craftingTable);
 			 mc.displayGuiScreen(GUI);}
-		 public void closeInventory() {GUI.onClose(); }
+		 
+		 public static void closeInventory() {GUI.onClose(); }
 		 
 		 public void gestureUp() {
 			 GUI.next();
@@ -143,7 +144,7 @@ public class PlayerController {
 		 }
 		 public void clickSelected() {
 			 SerialGUI temp= GUI.rightClickFocusedButton();
-			 if(temp!=null) {this.GUI=temp;}
+			 if(temp!=null) {GUI=temp;}
 		 }
 	   
 	//GETTERS/SETTERS
@@ -151,9 +152,10 @@ public class PlayerController {
 		public PlayerEntity getPlayer() { return player;}
 		public void setPlayer(ClientPlayerEntity player) { this.player = player;}
 		public void setGs(GameSettings gs) { this.gs = gs;}
-		public void setInventoryStatus(boolean status) {
-			this.inventoryStatus=status; updateCraftingGUI();
+		public static void setInventoryStatus(boolean status,boolean craftingTable) {
+			inventoryStatus=status; 
+			updateCraftingGUI(craftingTable);
 			}
-		public boolean getInventoryStatus() {return this.inventoryStatus;}
+		public boolean getInventoryStatus() {return inventoryStatus;}
 		
 }

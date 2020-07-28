@@ -16,11 +16,13 @@ public class SerialGUI extends Screen{
 	}
 	
 	public void next() {
+		if(buttons.size()==0) {return;}
 		currentlySelected=(currentlySelected+1)%buttons.size();
 		focusButton(currentlySelected);
 	}
 	
 	public void previous() {
+		if(buttons.size()==0) {return;}
 		currentlySelected--;
 		if(currentlySelected<0) {currentlySelected=buttons.size()-1;}
 		focusButton(currentlySelected);

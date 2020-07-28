@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 
@@ -22,12 +23,14 @@ import net.minecraft.client.util.RecipeBookCategories;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.ServerRecipeBook;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.StringTextComponent;
@@ -62,26 +65,30 @@ public class CraftingGUI extends SerialGUI {
 		
 		super.init();
 		//update Craftable recipies
-		try { updateCraftableRecipies(launchedByCraftingTable);} catch (Exception e) {e.printStackTrace();}
+		try { updateCraftableRecipies();} catch (Exception e) {e.printStackTrace();}
 		//get all recipies categories
 		updateCategories();
+		
+		int buttonWidth=(int) (0.3*this.width);
+		int buttonHeight=(int) (0.11*this.height);
+		
 		if(!craftableByCategory.isEmpty())
 		{
+			//button with all recepies
+			CraftingCategoryGUI guiAll=new CraftingCategoryGUI("all",craftable, this);
+			addButton(
+					 new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26),buttonWidth,buttonHeight,"all", 
+					 (p_213055_1_) -> {this.minecraft.displayGuiScreen(guiAll);},guiAll));
 			//button for each category
-			int i=0;
-			int buttonWidth=(int) (0.3*this.width);
-			int buttonHeight=(int) (0.11*this.height);
-			System.out.println("\nWidth: "+Integer.toString(buttonWidth));
-			System.out.println("\nHeight: "+Integer.toString(buttonHeight));
+			int i=1;
 			for(RecipeBookCategories cat:craftableByCategory.keySet()) {
 				 CraftingCategoryGUI gui=new CraftingCategoryGUI(cat.name(),craftableByCategory.get(cat), this);
 				 this.addButton(
-						 new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat, 
-						 (p_03) -> {this.minecraft.displayGuiScreen(gui);},gui));
+						 new CategoryButton(this.width/2 -buttonWidth/2, (int) (this.height*0.26+(buttonHeight*1.1)*i),buttonWidth,buttonHeight,cat.name(), 
+						 (p_213055_1_) -> {this.minecraft.displayGuiScreen(gui);},gui));
 				 i++;
 			}
-			this.focusButton(0);
-			
+			this.focusButton(0);	
 		}
 	}
 	
@@ -120,10 +127,9 @@ public class CraftingGUI extends SerialGUI {
 	}
 
 	
-	public void updateCraftableRecipies(boolean launchedByCraftingTable) throws Exception{
-		book=Minecraft.getInstance().player.getRecipeBook(); //gets all available recipes
+	public void updateCraftableRecipies() throws Exception{
+		book = Minecraft.getInstance().player.getRecipeBook(); //gets all available recipes
 		List<RecipeList> allRecipies= book.getRecipes();
-		
 		
 		//for distinguishing between crafting in inventory or in a crafting table
 		int craftingwidth=2; int craftingheight=2;
@@ -172,8 +178,8 @@ public class CraftingGUI extends SerialGUI {
 								}  
 							 }
 						}
-						if(canBeCrafted && temp.getRecipeOutput().getItem().equals(Items.AIR)) {
-							craftable.add(temp);break;
+						if(canBeCrafted && !temp.getRecipeOutput().getItem().equals(Items.AIR)) {
+							craftable.add(temp); break;
 						}
 						this.inventory=getPlayerInventoryAsItemStacks();
 					}	
@@ -275,7 +281,7 @@ public class CraftingGUI extends SerialGUI {
 	   }
 	
 	//source https://stackoverflow.com/questions/869033/how-do-i-copy-an-object-in-java
-	private static Object cloneObject(Object obj){
+	public static Object cloneObject(Object obj){
         try{
             Object clone = obj.getClass().newInstance();
             for (Field field : obj.getClass().getDeclaredFields()) {

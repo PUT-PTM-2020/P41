@@ -84,9 +84,11 @@ public class CraftingCategoryGUI extends SerialGUI{
 	private void craftItem(IRecipe<?> recipe) throws Exception {
 		ServerPlayerEntity splayer=Minecraft.getInstance().getIntegratedServer().getPlayerList().getPlayerByUUID(Minecraft.getInstance().player.getUniqueID());
 		ClientPlayerEntity player = Minecraft.getInstance().player;
+		
+		
 		//delete the ingredients from player's inventory
 		NonNullList<Ingredient> ingredients=recipe.getIngredients();
-
+       
 		for(Ingredient ing:ingredients) 
 		{
 			//save current Stacks in temp array and iterate over it
@@ -114,7 +116,7 @@ public class CraftingCategoryGUI extends SerialGUI{
 			//player side
 		player.inventory.addItemStackToInventory(recipe.getRecipeOutput());
 		//update recepies
-		((CraftingGUI) lastScreen).updateCraftableRecipies(false);
+		((CraftingGUI) lastScreen).updateCraftableRecipies();
 		((CraftingGUI) lastScreen).updateCategories();
 	}
 	

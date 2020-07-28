@@ -1,5 +1,6 @@
 package com.serial.serialmod;
 
+import InventoryControl.CraftingTableHandler;
 import commands.ModCommands;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,6 +18,7 @@ public class Serial
     public Serial() {
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(new CraftingTableHandler());
     }
     
     @SubscribeEvent

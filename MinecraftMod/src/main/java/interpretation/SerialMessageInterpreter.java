@@ -76,9 +76,8 @@ public class SerialMessageInterpreter {
 				toogleLeftRightClick(pack.getArguments());
 				return;
 			case INVENTORY:
-				sendToPlayer("sprawdzam czy argument!");
 				if(pack.getArguments().length>0) {
-					pc.setInventoryStatus(pack.getArguments()[0].bitAt(0));
+					pc.setInventoryStatus(pack.getArguments()[0].bitAt(0),false);
 				}
 				return;
 			default: return;
@@ -87,7 +86,6 @@ public class SerialMessageInterpreter {
 	}
 	
 	public static void rightClickInv(BitArray[] arg) throws Exception {
-		sendToPlayer("BUM");
 		//right click
 		if(arg[1].bitAt(0)) pc.clickSelected();
 	}
