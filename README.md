@@ -1,16 +1,13 @@
-# Zestaw kontrolerów VR do gry Minecraft
+# Zestaw VR do gry Minecraft
 
 ## Efekt końcowy
  <img src="zdjecie jeden" alt="Wszystkie kontrolery">
  
 ### Gameplay
- [![Obejrzyj Gameplay](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/vt5fpE0bzSY)
-
-## Opis projektu
-...
+ [![Obejrzyj Gameplay](https://i.imgur.com/LEvd0vL.png)](https://www.youtube.com/watch?v=Tr7hH6reKyc)
 
 ## Instalacja Modyfikacji
-1. Pobierz plik .zip [tutaj](/modInstallationPackage.zip)
+1. Pobierz plik .zip [[tutaj]](/modInstallationPackage.zip)
 2. Zainstaluj forge-1.15.2.exe.
 3. Włącz minecraft z nowo stworzoną konfiguracją "forge 1.15..." aby wygenerować pliki forge'a.
 4. Wyszukaj folder %appdata% przejdź do .minecraft/mods i umieść tam serial<wersja>.jar.
