@@ -11,7 +11,7 @@
 2. Zainstaluj forge-1.15.2.exe.
 3. Włącz minecraft z nowo stworzoną konfiguracją "forge 1.15..." aby wygenerować pliki forge'a.
 4. Wyszukaj folder %appdata% przejdź do .minecraft/mods i umieść tam serial<wersja>.jar.
-5. /serial help daje do wszystkich dostępnych komend.
+5. /serial help daje wykaz wszystkich dostępnych komend.
 
 ## Prace nad projektem
 ### Changelog:
